@@ -1,10 +1,10 @@
 # csc413-tankgame
 
 
-| Student Information |                |
-|:-------------------:|----------------|
-|  Student Name       |   Name Here    |
-|  Student Email      |   Email Here   |
+| Student Information |                 |
+|:-------------------:|-----------------|
+|  Student Name       | Bryan Lee       |
+|  Student Email      | blee37@sfsu.edu |
 
 
 ## Purpose of jar Folder 
