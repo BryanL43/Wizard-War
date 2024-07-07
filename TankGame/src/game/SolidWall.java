@@ -40,7 +40,7 @@ public class SolidWall extends GameObject implements Walls {
 
     @Override
     public String toString() {
-        return "Wall Location: X = " + x + ", Y = " + y;
+        return "Solid Wall Location: X = " + x + ", Y = " + y;
     }
 
     @Override

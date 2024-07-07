@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 public class BreakableWall extends GameObject implements Walls {
     private final float x,y;
     private final BufferedImage img;
+    private boolean destroyed = false;
 
     public BreakableWall(float x, float y, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
@@ -41,7 +42,7 @@ public class BreakableWall extends GameObject implements Walls {
 
     @Override
     public String toString() {
-        return "Wall Location: X = " + x + ", Y = " + y;
+        return "Breakable Wall Location: X = " + x + ", Y = " + y;
     }
 
     @Override
@@ -51,6 +52,12 @@ public class BreakableWall extends GameObject implements Walls {
 
     @Override
     public void collides(GameObject otherObj) {
+        if (otherObj instanceof Bullet) {
+            this.destroyed = true;
+        }
+    }
 
+    public boolean isDestroyed() {
+        return this.destroyed;
     }
 }
