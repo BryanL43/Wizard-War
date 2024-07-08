@@ -23,6 +23,7 @@ public class GameWorld extends JPanel implements Runnable {
 
     private BufferedImage world;
     private Tank t1;
+    private Tank t2;
     private final Launcher lf;
     private long tick = 0;
     private static List<GameObject> gameObjs = new ArrayList<>(); //static to allow access by tank to add
@@ -36,7 +37,8 @@ public class GameWorld extends JPanel implements Runnable {
         try {
             while (true) {
                 this.tick++;
-                this.t1.update(); // update tank
+                this.t1.update();
+                this.t2.update(); // update tank
                 this.repaint();   // redraw game
                 this.checkCollision();
                 gameObjs.forEach(obj -> {
@@ -117,6 +119,26 @@ public class GameWorld extends JPanel implements Runnable {
         this.lf.getJf().addKeyListener(tc1);
         gameObjs.add(t1);
 
+        BufferedImage t2img = null;
+        try {
+            /*
+             * note class loaders read files from the out folder (build folder in Netbeans) and not the
+             * current working directory. When running a jar, class loaders will read from within the jar.
+             */
+            t2img = ImageIO.read(
+                    Objects.requireNonNull(GameWorld.class.getClassLoader().getResource("TankGame/resources/tank/tank2.png"),
+                            "Could not find tank2.png")
+            );
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
+        }
+
+        t2 = new Tank(400, 400, 0, 0, (short) 0, t2img);
+        TankControl tc2 = new TankControl(t2, KeyEvent.VK_U, KeyEvent.VK_J, KeyEvent.VK_H, KeyEvent.VK_K, KeyEvent.VK_L);
+        this.lf.getJf().addKeyListener(tc2);
+        gameObjs.add(t2);
+
         //Create obstacles
         try {
             InputStreamReader mapData = new InputStreamReader(
@@ -166,10 +188,10 @@ public class GameWorld extends JPanel implements Runnable {
         Graphics2D g2 = (Graphics2D) g;
         Graphics2D buffer = world.createGraphics();
         drawFloor(buffer);
-
         gameObjs.forEach(obj -> obj.drawImage(buffer));
 
         this.t1.drawImage(buffer);
+        this.t2.drawImage(buffer);
         g2.drawImage(world, 0, 0, null);
     }
 
