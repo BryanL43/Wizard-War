@@ -1,8 +1,8 @@
 package TankGame.src;
 
 public class GameConstants {
-    public static final int GAME_WORLD_WIDTH = 2048;
-    public static final int GAME_WORLD_HEIGHT = 1536;
+    public static final int GAME_WORLD_WIDTH = 2698;
+    public static final int GAME_WORLD_HEIGHT = 1575;
 
     public static final int GAME_SCREEN_WIDTH = 1280;
     public static final int GAME_SCREEN_HEIGHT = 960;

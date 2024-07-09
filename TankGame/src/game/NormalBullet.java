@@ -45,7 +45,7 @@ public class NormalBullet extends GameObject implements Bullet {
     }
 
     private void checkBorder() {
-        if (x < 30 || x >= GameConstants.GAME_SCREEN_WIDTH - 88 || y < 40 || y >= GameConstants.GAME_SCREEN_HEIGHT - 80) {
+        if (x < 32 || x >= GameConstants.GAME_WORLD_WIDTH - 32 || y < 32 || y >= GameConstants.GAME_WORLD_HEIGHT - 32) {
             this.active = false;
         }
     }

@@ -95,8 +95,8 @@ public class GameWorld extends JPanel implements Runnable {
      * initial state as well.
      */
     public void InitializeGame() {
-        this.world = new BufferedImage(GameConstants.GAME_SCREEN_WIDTH,
-                GameConstants.GAME_SCREEN_HEIGHT,
+        this.world = new BufferedImage(GameConstants.GAME_WORLD_WIDTH,
+                GameConstants.GAME_WORLD_HEIGHT,
                 BufferedImage.TYPE_INT_RGB);
 
         BufferedImage t1img = null;
@@ -172,8 +172,8 @@ public class GameWorld extends JPanel implements Runnable {
                             "Could not get floor texture")
             );
 
-            for (int i = 0; i < GameConstants.GAME_SCREEN_WIDTH; i += 320) {
-                for (int j = 0; j < GameConstants.GAME_SCREEN_HEIGHT; j += 240) {
+            for (int i = 0; i < GameConstants.GAME_WORLD_WIDTH; i += 320) {
+                for (int j = 0; j < GameConstants.GAME_WORLD_HEIGHT; j += 240) {
                     buffer.drawImage(floor, i, j, null);
                 }
             }
@@ -183,6 +183,34 @@ public class GameWorld extends JPanel implements Runnable {
         }
     }
 
+    private int calculateScreenX(int x) {
+        int screenX = x - (GameConstants.GAME_SCREEN_WIDTH / 4);
+        if (screenX < 0) {
+            return 0;
+        }
+
+        int maxScreenX = GameConstants.GAME_WORLD_WIDTH - GameConstants.GAME_SCREEN_WIDTH;
+        if (screenX > maxScreenX) {
+            return maxScreenX;
+        }
+
+        return screenX;
+    }
+
+    private int calculateScreenY(int y) {
+        int screenY = y - (GameConstants.GAME_SCREEN_HEIGHT / 2);
+        if (screenY < 0) {
+            return 0;
+        }
+
+        int maxScreenY = GameConstants.GAME_WORLD_HEIGHT - GameConstants.GAME_SCREEN_HEIGHT;
+        if (screenY > maxScreenY) {
+            return maxScreenY;
+        }
+
+        return screenY;
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
@@ -190,9 +218,29 @@ public class GameWorld extends JPanel implements Runnable {
         drawFloor(buffer);
         gameObjs.forEach(obj -> obj.drawImage(buffer));
 
-        this.t1.drawImage(buffer);
-        this.t2.drawImage(buffer);
-        g2.drawImage(world, 0, 0, null);
+        int screenX1 = calculateScreenX((int) this.t1.getX());
+        int screenX2 = calculateScreenX((int) this.t2.getX());
+        int screenY1 = calculateScreenY((int) this.t1.getY());
+        int screenY2 = calculateScreenY((int) this.t2.getY());
+
+        //Ensure the requested sub images do not exceed the bounds of the world image
+        int halfScreenWidth = GameConstants.GAME_SCREEN_WIDTH / 2;
+        int subImageWidth1 = Math.min(halfScreenWidth, GameConstants.GAME_WORLD_WIDTH - screenX1);
+        int subImageWidth2 = Math.min(halfScreenWidth, GameConstants.GAME_WORLD_WIDTH - screenX2);
+
+        //Get the sub images of the world centered around the tanks
+        BufferedImage leftHalf = world.getSubimage(screenX1, screenY1, subImageWidth1, GameConstants.GAME_SCREEN_HEIGHT);
+        BufferedImage rightHalf = world.getSubimage(screenX2, screenY2, subImageWidth2, GameConstants.GAME_SCREEN_HEIGHT);
+
+        //Draw both player's tank screen
+        g2.drawImage(leftHalf, 0, 0, null);
+        g2.drawImage(rightHalf, halfScreenWidth, 0, null);
+
+        //Draw border between split screen
+        g2.setColor(Color.BLACK);
+        int borderThickness = 10;
+        g2.setStroke(new BasicStroke(borderThickness));
+        g2.drawLine(halfScreenWidth - borderThickness / 2, 0, halfScreenWidth - borderThickness / 2, GameConstants.GAME_SCREEN_HEIGHT);
     }
 
     //Need to be static to allow access for tank to add bullet for collision handling

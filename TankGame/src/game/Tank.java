@@ -171,17 +171,17 @@ public class Tank extends GameObject {
 
 
     private void checkBorder() {
-        if (x < 30) {
-            x = 30;
+        if (x < 32) {
+            x = 32;
         }
-        if (x >= GameConstants.GAME_SCREEN_WIDTH - 88) {
-            x = GameConstants.GAME_SCREEN_WIDTH - 88;
+        if (x >= GameConstants.GAME_WORLD_WIDTH - 32) {
+            x = GameConstants.GAME_WORLD_WIDTH - 32;
         }
-        if (y < 40) {
-            y = 40;
+        if (y < 32) {
+            y = 32;
         }
-        if (y >= GameConstants.GAME_SCREEN_HEIGHT - 80) {
-            y = GameConstants.GAME_SCREEN_HEIGHT - 80;
+        if (y >= GameConstants.GAME_WORLD_HEIGHT - 32) {
+            y = GameConstants.GAME_WORLD_HEIGHT - 32;
         }
     }
 
