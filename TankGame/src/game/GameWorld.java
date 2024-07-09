@@ -114,7 +114,7 @@ public class GameWorld extends JPanel implements Runnable {
             ex.printStackTrace();
         }
 
-        t1 = new Tank(300, 300, 0, 0, (short) 0, t1img);
+        t1 = new Tank(224, 718, 0, 0, (short) 0, t1img);
         TankControl tc1 = new TankControl(t1, KeyEvent.VK_W, KeyEvent.VK_S, KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_F);
         this.lf.getJf().addKeyListener(tc1);
         gameObjs.add(t1);
@@ -134,7 +134,7 @@ public class GameWorld extends JPanel implements Runnable {
             ex.printStackTrace();
         }
 
-        t2 = new Tank(400, 400, 0, 0, (short) 0, t2img);
+        t2 = new Tank(1775, 718, 0, 0, (short) 0, t2img);
         TankControl tc2 = new TankControl(t2, KeyEvent.VK_U, KeyEvent.VK_J, KeyEvent.VK_H, KeyEvent.VK_K, KeyEvent.VK_L);
         this.lf.getJf().addKeyListener(tc2);
         gameObjs.add(t2);
