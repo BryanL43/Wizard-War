@@ -1,5 +1,6 @@
 package TankGame.src;
 
+import TankGame.src.ResourceHandler.ResourceManager;
 import TankGame.src.game.GameWorld;
 import TankGame.src.menus.EndGamePanel;
 import TankGame.src.menus.StartMenuPanel;
@@ -96,6 +97,7 @@ public class Launcher {
     }
 
     public static void main(String[] args) {
+        ResourceManager.loadResources();
         (new Launcher()).initUIComponents();
     }
 }

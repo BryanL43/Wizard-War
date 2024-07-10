@@ -3,13 +3,12 @@ package TankGame.src.game;
 
 import TankGame.src.GameConstants;
 import TankGame.src.Launcher;
+import TankGame.src.ResourceHandler.ResourceManager;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -26,8 +25,8 @@ public class GameWorld extends JPanel implements Runnable {
     private Tank t2;
     private final Launcher lf;
     private long tick = 0;
-    private static List<GameObject> gameObjs = new ArrayList<>(); //static to allow access by tank to add
-    private List<Animation> animations = new ArrayList<>();
+    private static final List<GameObject> gameObjs = new ArrayList<>(); //static to allow access by tank to add
+    private final List<Animation> animations = new ArrayList<>();
     private boolean aniDebounce = false;
 
     public GameWorld(Launcher lf) {
@@ -74,10 +73,7 @@ public class GameWorld extends JPanel implements Runnable {
 
                     if (obj1 instanceof Bullet && !aniDebounce) {
                         aniDebounce = true;
-                        ImageIcon explosionIcon = new ImageIcon(
-                                Objects.requireNonNull(GameWorld.class.getClassLoader().getResource("TankGame/resources/explosion.gif"),
-                                        "Could not get explosion animation!")
-                        );
+                        ImageIcon explosionIcon = ResourceManager.getAnimation("explosion");
                         animations.add(new Animation(explosionIcon, obj1.getHitbox().x, obj1.getHitbox().y, 200));
                     }
 
@@ -115,47 +111,19 @@ public class GameWorld extends JPanel implements Runnable {
                 GameConstants.GAME_WORLD_HEIGHT,
                 BufferedImage.TYPE_INT_RGB);
 
-        BufferedImage t1img = null;
-        try {
-            /*
-             * note class loaders read files from the out folder (build folder in Netbeans) and not the
-             * current working directory. When running a jar, class loaders will read from within the jar.
-             */
-            t1img = ImageIO.read(
-                    Objects.requireNonNull(GameWorld.class.getClassLoader().getResource("TankGame/resources/tank/tank1.png"),
-                            "Could not find tank1.png")
-            );
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-            ex.printStackTrace();
-        }
-
+        BufferedImage t1img = ResourceManager.getSprite("tank1");
         t1 = new Tank(224, 718, 0, 0, (short) 0, t1img);
         TankControl tc1 = new TankControl(t1, KeyEvent.VK_W, KeyEvent.VK_S, KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_F);
         this.lf.getJf().addKeyListener(tc1);
         gameObjs.add(t1);
 
-        BufferedImage t2img = null;
-        try {
-            /*
-             * note class loaders read files from the out folder (build folder in Netbeans) and not the
-             * current working directory. When running a jar, class loaders will read from within the jar.
-             */
-            t2img = ImageIO.read(
-                    Objects.requireNonNull(GameWorld.class.getClassLoader().getResource("TankGame/resources/tank/tank2.png"),
-                            "Could not find tank2.png")
-            );
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-            ex.printStackTrace();
-        }
-
+        BufferedImage t2img = ResourceManager.getSprite("tank2");
         t2 = new Tank(1775, 718, 0, 0, (short) 0, t2img);
         TankControl tc2 = new TankControl(t2, KeyEvent.VK_U, KeyEvent.VK_J, KeyEvent.VK_H, KeyEvent.VK_K, KeyEvent.VK_L);
         this.lf.getJf().addKeyListener(tc2);
         gameObjs.add(t2);
 
-        //Create obstacles
+        //Create the map's walls
         try {
             InputStreamReader mapData = new InputStreamReader(
                     Objects.requireNonNull(GameWorld.class.getClassLoader().getResourceAsStream("TankGame/resources/map/map.csv"),
@@ -176,26 +144,17 @@ public class GameWorld extends JPanel implements Runnable {
                 }
                 row++;
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     private void drawFloor(Graphics2D buffer) {
-        try {
-            BufferedImage floor = ImageIO.read(
-                    Objects.requireNonNull(GameWorld.class.getClassLoader().getResource("TankGame/resources/floor/Background.bmp"),
-                            "Could not get floor texture")
-            );
-
-            for (int i = 0; i < GameConstants.GAME_WORLD_WIDTH; i += 320) {
-                for (int j = 0; j < GameConstants.GAME_WORLD_HEIGHT; j += 240) {
-                    buffer.drawImage(floor, i, j, null);
-                }
+        BufferedImage floor = ResourceManager.getSprite("floor");
+        for (int i = 0; i < GameConstants.GAME_WORLD_WIDTH; i += 320) {
+            for (int j = 0; j < GameConstants.GAME_WORLD_HEIGHT; j += 240) {
+                buffer.drawImage(floor, i, j, null);
             }
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-            ex.printStackTrace();
         }
     }
 
@@ -206,11 +165,8 @@ public class GameWorld extends JPanel implements Runnable {
         }
 
         int maxScreenX = GameConstants.GAME_WORLD_WIDTH - GameConstants.GAME_SCREEN_WIDTH;
-        if (screenX > maxScreenX) {
-            return maxScreenX;
-        }
+        return Math.min(screenX, maxScreenX);
 
-        return screenX;
     }
 
     private int calculateScreenY(int y) {
@@ -220,11 +176,8 @@ public class GameWorld extends JPanel implements Runnable {
         }
 
         int maxScreenY = GameConstants.GAME_WORLD_HEIGHT - GameConstants.GAME_SCREEN_HEIGHT;
-        if (screenY > maxScreenY) {
-            return maxScreenY;
-        }
+        return Math.min(screenY, maxScreenY);
 
-        return screenY;
     }
 
     @Override

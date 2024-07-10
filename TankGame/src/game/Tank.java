@@ -1,15 +1,11 @@
 package TankGame.src.game;
 
 import TankGame.src.GameConstants;
+import TankGame.src.ResourceHandler.ResourceManager;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 /**
  *
@@ -122,27 +118,18 @@ public class Tank extends GameObject {
         if (this.ShootPressed) {
             this.ShootPressed = false;
 
-            BufferedImage bulletImg;
-            try {
-                bulletImg = ImageIO.read(
-                        Objects.requireNonNull(Tank.class.getClassLoader().getResource("TankGame/resources/bullets/Shell.gif"),
-                                "Could not find normal shell image")
-                );
+            BufferedImage bulletImg = ResourceManager.getSprite("bullet");
 
-                float offsetDistance = 58;
-                double radians = Math.toRadians(angle);
+            float offsetDistance = 58;
+            double radians = Math.toRadians(angle);
 
-                float tankCenterX = x + img.getWidth() / 4.0f;
-                float tankCenterY = y + img.getHeight() / 4.0f;
+            float tankCenterX = x + img.getWidth() / 4.0f;
+            float tankCenterY = y + img.getHeight() / 4.0f;
 
-                float bulletX = tankCenterX + ((float) (offsetDistance * Math.cos(radians)));
-                float bulletY = tankCenterY + ((float) (offsetDistance * Math.sin(radians)));
+            float bulletX = tankCenterX + ((float) (offsetDistance * Math.cos(radians)));
+            float bulletY = tankCenterY + ((float) (offsetDistance * Math.sin(radians)));
 
-                GameWorld.createBullet(bulletX, bulletY, angle, bulletImg);
-            } catch (IOException ex) {
-                System.out.println(ex.getMessage());
-                ex.printStackTrace();
-            }
+            GameWorld.createBullet(bulletX, bulletY, angle, bulletImg);
         }
 
         hitbox.setLocation((int) x, (int) y);
