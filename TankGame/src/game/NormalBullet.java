@@ -75,6 +75,10 @@ public class NormalBullet extends GameObject implements Bullet {
     @Override
     public void collides(GameObject otherObj) {
         this.active = false;
+        if (otherObj instanceof Tank) {
+            ((Tank) otherObj).takeDamage(10);
+            System.out.println(((Tank) otherObj).getHealth());
+        }
     }
 
     public boolean isActive() {

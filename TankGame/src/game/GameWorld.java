@@ -69,7 +69,9 @@ public class GameWorld extends JPanel implements Runnable {
                 GameObject obj2 = gameObjs.get(j);
                 if (obj1.getHitbox().intersects(obj2.getHitbox())) {
                     obj1.collides(obj2);
-                    obj2.collides(obj1);
+                    if (!(obj2 instanceof Bullet)) {
+                        obj2.collides(obj1);
+                    }
                 }
             }
         }

@@ -33,6 +33,9 @@ public class Tank extends GameObject {
     private boolean LeftPressed;
     private boolean ShootPressed = false;
 
+    private int health = 100;
+    private boolean alive = true;
+
     Tank(float x, float y, float vx, float vy, float angle, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
         this.x = x;
@@ -241,5 +244,16 @@ public class Tank extends GameObject {
                 }
             }
         }
+    }
+
+    public void takeDamage(int amount) {
+        this.health -= amount;
+        if (this.health <= 0) {
+            System.exit(0);
+        }
+    }
+
+    public int getHealth() {
+        return this.health;
     }
 }
