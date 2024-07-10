@@ -27,6 +27,8 @@ public class GameWorld extends JPanel implements Runnable {
     private final Launcher lf;
     private long tick = 0;
     private static List<GameObject> gameObjs = new ArrayList<>(); //static to allow access by tank to add
+    private List<Animation> animations = new ArrayList<>();
+    private boolean aniDebounce = false;
 
     public GameWorld(Launcher lf) {
         this.lf = lf;
@@ -51,7 +53,7 @@ public class GameWorld extends JPanel implements Runnable {
                  * Sleep for 1000/144 ms (~6.9ms). This is done to have our
                  * loop run at a fixed rate per/sec.
                  */
-                Thread.sleep(1000 / 144);
+                Thread.sleep(1000/144);
             }
         } catch (InterruptedException ignored) {
             System.out.println(ignored);
@@ -69,12 +71,24 @@ public class GameWorld extends JPanel implements Runnable {
                 GameObject obj2 = gameObjs.get(j);
                 if (obj1.getHitbox().intersects(obj2.getHitbox())) {
                     obj1.collides(obj2);
+
+                    if (obj1 instanceof Bullet && !aniDebounce) {
+                        aniDebounce = true;
+                        ImageIcon explosionIcon = new ImageIcon(
+                                Objects.requireNonNull(GameWorld.class.getClassLoader().getResource("TankGame/resources/explosion.gif"),
+                                        "Could not get explosion animation!")
+                        );
+                        animations.add(new Animation(explosionIcon, obj1.getHitbox().x, obj1.getHitbox().y, 200));
+                    }
+
                     if (!(obj2 instanceof Bullet)) {
                         obj2.collides(obj1);
                     }
                 }
             }
         }
+        aniDebounce = false;
+
         //Remove inactive bullets
         gameObjs.removeIf(obj -> obj instanceof NormalBullet && !((NormalBullet) obj).isActive());
 
@@ -220,6 +234,15 @@ public class GameWorld extends JPanel implements Runnable {
         drawFloor(buffer);
         gameObjs.forEach(obj -> obj.drawImage(buffer));
 
+        //Reverse iteration to prevent skipping
+        for (int i = animations.size() - 1; i >= 0; i--) {
+            if (animations.get(i).isFinished()) {
+                animations.remove(i);
+            } else {
+                animations.get(i).drawImage(buffer);
+            }
+        }
+
         int screenX1 = calculateScreenX((int) this.t1.getX());
         int screenX2 = calculateScreenX((int) this.t2.getX());
         int screenY1 = calculateScreenY((int) this.t1.getY());
@@ -243,6 +266,8 @@ public class GameWorld extends JPanel implements Runnable {
         int borderThickness = 10;
         g2.setStroke(new BasicStroke(borderThickness));
         g2.drawLine(halfScreenWidth - borderThickness / 2, 0, halfScreenWidth - borderThickness / 2, GameConstants.GAME_SCREEN_HEIGHT);
+
+        buffer.dispose();
     }
 
     //Need to be static to allow access for tank to add bullet for collision handling

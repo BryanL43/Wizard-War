@@ -50,11 +50,18 @@ public class NormalBullet extends GameObject implements Bullet {
         }
     }
 
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
     @Override
     public String toString() {
         return "Bullet: x=" + x + ", y=" + y + ", angle=" + angle;
     }
-
 
     @Override
     public void drawImage(Graphics g) {
