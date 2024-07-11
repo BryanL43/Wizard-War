@@ -177,15 +177,17 @@ public class GameWorld extends JPanel implements Runnable {
 
         int maxScreenY = GameConstants.GAME_WORLD_HEIGHT - GameConstants.GAME_SCREEN_HEIGHT;
         return Math.min(screenY, maxScreenY);
-
     }
 
     @Override
     public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         Graphics2D buffer = world.createGraphics();
+
         drawFloor(buffer);
-        gameObjs.forEach(obj -> obj.drawImage(buffer));
+
+        List<GameObject> gameObjsCopy = new ArrayList<>(gameObjs); //Prevents ConcurrentModificationException
+        gameObjsCopy.forEach(obj -> obj.drawImage(buffer));
 
         //Reverse iteration to prevent skipping
         for (int i = animations.size() - 1; i >= 0; i--) {
