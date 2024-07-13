@@ -49,8 +49,11 @@ public class GameWorld extends JPanel implements Runnable {
                     if (obj instanceof MagicBullet) {
                         ((MagicBullet) obj).update();
                     }
-                    if (obj instanceof ZapBullet) {
-                        ((ZapBullet) obj).update();
+                    if (obj instanceof ZapSpell) {
+                        ((ZapSpell) obj).update();
+                    }
+                    if (obj instanceof FireBallSpell) {
+                        ((FireBallSpell) obj).update();
                     }
                 });
 
@@ -74,25 +77,27 @@ public class GameWorld extends JPanel implements Runnable {
                 if (i == j) continue; //if same object then ignore
 
                 GameObject obj2 = gameObjs.get(j);
-                if (!(obj1 instanceof ZapBullet)) {
+
+                //Magic bullet spell bounce effect
+                if (obj1 instanceof MagicBullet) {
                     if (obj1.getHitbox().intersects(obj2.getHitbox())) {
                         obj1.collides(obj2);
 
-                        if (!aniDebounce &&
-                                (obj1 instanceof MagicBullet) && !((MagicBullet) obj1).isActive() ||
-                                (obj1 instanceof NormalBullet && !((NormalBullet) obj1).isActive())) {
-
+                        if (!aniDebounce && !((MagicBullet) obj1).isActive()) {
                             aniDebounce = true;
                             ImageIcon explosionIcon = ResourceManager.getAnimation("explosion");
                             animations.add(new Animation(explosionIcon, obj1.getHitbox().x, obj1.getHitbox().y, 200));
                         }
 
-                        if (!(obj2 instanceof Bullet)) {
+                        if (!(obj2 instanceof Spell)) {
                             obj2.collides(obj1);
                         }
                     }
-                } else {
-                    if (obj2 instanceof Tank && ((Tank) obj2).getID() != ((ZapBullet) obj1).getParentID()) {
+                }
+
+                //Zap spell radius effect
+                if (obj1 instanceof ZapSpell) {
+                    if (obj2 instanceof Tank && ((Tank) obj2).getID() != ((ZapSpell) obj1).getParentID()) { //If other player is near the spell then the spell will trigger AOE damage
                         double distance = Math.sqrt(Math.pow(obj1.getHitbox().getCenterX() - obj2.getHitbox().getCenterX(), 2) +
                                 Math.pow(obj1.getHitbox().getCenterY() - obj2.getHitbox().getCenterY(), 2));
                         if (distance <= 90) {
@@ -100,27 +105,66 @@ public class GameWorld extends JPanel implements Runnable {
                             if (!aniDebounce) {
                                 aniDebounce = true;
                                 ImageIcon zapEffectIcon = ResourceManager.getAnimation("zap");
-                                animations.add(new Animation(zapEffectIcon, (int) ((ZapBullet) obj1).getX() - (zapEffectIcon.getIconWidth() / 2), (int) ((ZapBullet) obj1).getY() - (zapEffectIcon.getIconHeight() / 2), 750));
+                                int zapEffectX = (int) ((ZapSpell) obj1).getX() - (zapEffectIcon.getIconWidth() / 2);
+                                int zapEffectY = (int) ((ZapSpell) obj1).getY() - (zapEffectIcon.getIconHeight() / 2);
+                                animations.add(new Animation(zapEffectIcon, zapEffectX, zapEffectY, 750));
                             }
                         }
-                    } else {
+                    } else { //Impact on wall will do nothing
                         if (obj1.getHitbox().intersects(obj2.getHitbox())) {
                             obj1.collides(obj2);
 
-                            if (!(obj2 instanceof Bullet)) {
+                            if (!(obj2 instanceof Spell)) {
                                 obj2.collides(obj1);
                             }
                         }
                     }
                 }
+
+                //Fireball explosion effect
+                if (obj1 instanceof FireBallSpell) {
+                    if (obj1.getHitbox().intersects(obj2.getHitbox())) {
+                        //Prevent animation from playing on collision with your own tank
+                        if (obj2 instanceof Tank && ((Tank) obj2).getID() == ((FireBallSpell) obj1).getParentID()) {
+                            continue;
+                        }
+
+                        obj1.collides(obj2);
+                        if (!aniDebounce) {
+                            aniDebounce = true;
+                            ImageIcon largeExplosionEffect = ResourceManager.getAnimation("large explosion");
+                            int explosionX = (int) ((FireBallSpell) obj1).getX();
+                            int explosionY = (int) ((FireBallSpell) obj1).getY() - (largeExplosionEffect.getIconHeight() / 4);
+                            Animation explosion = new Animation(largeExplosionEffect, explosionX, explosionY, 750);
+                            animations.add(explosion);
+
+                            // Check if enemy tank intersects with the animation bounding box
+                            if (obj2 instanceof Tank && obj2.getHitbox().intersects(explosion.getHitBox())) {
+                                ((Tank) obj2).takeDamage(10);
+                                System.out.println(((Tank) obj2).getHealth());
+                            }
+                        }
+
+                        if (!(obj2 instanceof Spell)) {
+                            obj2.collides(obj1);
+                        }
+                    }
+                }
+
+                //Tank collided with wall
+                if (obj1 instanceof Tank && obj1.getHitbox().intersects(obj2.getHitbox())) {
+                    obj1.collides(obj2);
+                }
+
             }
         }
         aniDebounce = false;
 
-        //Remove inactive bullets
+        //Remove inactive spells
         gameObjs.removeIf(obj -> obj instanceof NormalBullet && !((NormalBullet) obj).isActive());
         gameObjs.removeIf(obj -> obj instanceof MagicBullet && !((MagicBullet) obj).isActive());
-        gameObjs.removeIf(obj -> obj instanceof ZapBullet && !((ZapBullet) obj).isActive());
+        gameObjs.removeIf(obj -> obj instanceof ZapSpell && !((ZapSpell) obj).isActive());
+        gameObjs.removeIf(obj -> obj instanceof FireBallSpell && !((FireBallSpell) obj).isActive());
 
         //Remove breakable wall if hit
         gameObjs.removeIf(obj -> obj instanceof BreakableWall && ((BreakableWall) obj).isDestroyed());
@@ -261,9 +305,9 @@ public class GameWorld extends JPanel implements Runnable {
 
     //Need to be static to allow access for tank to add bullet for collision handling
     public static void createBullet(int id, float x, float y, float angle, BufferedImage img) {
-//        NormalBullet newBullet = new NormalBullet(id, x, y, angle, img);
 //        MagicBullet newBullet = new MagicBullet(id, x, y, angle, img);
-        ZapBullet newBullet = new ZapBullet(id, x, y, angle, img);
+//        ZapSpell newBullet = new ZapSpell(id, x, y, angle, img);
+        FireBallSpell newBullet = new FireBallSpell(id, x, y, angle, img);
         gameObjs.add(newBullet);
     }
 }

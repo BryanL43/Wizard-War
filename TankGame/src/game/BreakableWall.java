@@ -52,7 +52,7 @@ public class BreakableWall extends GameObject implements Walls {
 
     @Override
     public void collides(GameObject otherObj) {
-        if (otherObj instanceof Bullet) {
+        if (otherObj instanceof Spell) {
             this.destroyed = true;
         }
     }

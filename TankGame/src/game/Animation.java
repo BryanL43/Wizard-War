@@ -30,4 +30,8 @@ public class Animation {
             g.drawImage(animatedIcon.getImage(), x, y, null);
         }
     }
+
+    public Rectangle getHitBox() {
+        return new Rectangle(x, y, animatedIcon.getIconWidth() * 2, animatedIcon.getIconHeight() * 2);
+    }
 }

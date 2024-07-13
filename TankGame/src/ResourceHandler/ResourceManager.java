@@ -40,11 +40,13 @@ public class ResourceManager {
         ResourceManager.sprites.put("bullet", loadSprite("TankGame/resources/bullets/Shell.gif"));
         ResourceManager.sprites.put("magic bullet", loadSprite("TankGame/resources/bullets/magicBullet.gif"));
         ResourceManager.sprites.put("lightning ball", loadSprite("TankGame/resources/bullets/lightningBall.png"));
+        ResourceManager.sprites.put("fire ball", loadSprite("TankGame/resources/bullets/fireBall.png"));
     }
 
     private static void initAnimations() {
-        ResourceManager.animations.put("explosion", loadAnimation("TankGame/resources/explosion.gif"));
-        ResourceManager.animations.put("zap", loadAnimation("TankGame/resources/zapEffect.gif"));
+        ResourceManager.animations.put("explosion", loadAnimation("TankGame/resources/effects/explosion.gif"));
+        ResourceManager.animations.put("zap", loadAnimation("TankGame/resources/effects/zapEffect.gif"));
+        ResourceManager.animations.put("large explosion", loadAnimation("TankGame/resources/effects/largeExplosion.gif"));
     }
 
     public static void loadResources() {

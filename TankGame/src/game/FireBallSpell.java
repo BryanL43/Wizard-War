@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
-public class NormalBullet extends GameObject implements Spell {
+public class FireBallSpell extends GameObject implements Spell {
     private float x;
     private float y;
     private float vx;
@@ -18,7 +18,7 @@ public class NormalBullet extends GameObject implements Spell {
 
     private float R = 4;
 
-    NormalBullet(int id, float x, float y, float angle, BufferedImage img) {
+    FireBallSpell(int id, float x, float y, float angle, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
 
         this.x = x;
@@ -75,18 +75,22 @@ public class NormalBullet extends GameObject implements Spell {
 
     @Override
     public void collides(GameObject otherObj) {
-        if (otherObj instanceof Tank otherTank) {
-            if (otherTank.getID() != parentID) { //Prevent damaging yourself
-                this.active = false;
-                otherTank.takeDamage(10);
-                System.out.println(otherTank.getHealth());
-            }
-        } else { //Hits any other object like walls
-            this.active = false;
-        }
+        this.active = false;
     }
 
     public boolean isActive() {
         return this.active;
+    }
+
+    public int getParentID() {
+        return this.parentID;
+    }
+
+    public float getX() {
+        return this.x;
+    }
+
+    public float getY() {
+        return this.y;
     }
 }

@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
-public class MagicBullet extends GameObject implements Bullet {
+public class MagicBullet extends GameObject implements Spell {
     private float x;
     private float y;
     private float vx;

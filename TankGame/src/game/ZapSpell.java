@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
-public class ZapBullet extends GameObject implements Bullet {
+public class ZapSpell extends GameObject implements Spell {
     private float x;
     private float y;
     private float vx;
@@ -18,7 +18,7 @@ public class ZapBullet extends GameObject implements Bullet {
 
     private float R = 3;
 
-    ZapBullet(int id, float x, float y, float angle, BufferedImage img) {
+    ZapSpell(int id, float x, float y, float angle, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
 
         this.x = x;
