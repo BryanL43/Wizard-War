@@ -39,10 +39,12 @@ public class ResourceManager {
         ResourceManager.sprites.put("breakable wall", loadSprite("TankGame/resources/walls/wall2.png"));
         ResourceManager.sprites.put("bullet", loadSprite("TankGame/resources/bullets/Shell.gif"));
         ResourceManager.sprites.put("magic bullet", loadSprite("TankGame/resources/bullets/magicBullet.gif"));
+        ResourceManager.sprites.put("lightning ball", loadSprite("TankGame/resources/bullets/lightningBall.png"));
     }
 
     private static void initAnimations() {
         ResourceManager.animations.put("explosion", loadAnimation("TankGame/resources/explosion.gif"));
+        ResourceManager.animations.put("zap", loadAnimation("TankGame/resources/zapEffect.gif"));
     }
 
     public static void loadResources() {

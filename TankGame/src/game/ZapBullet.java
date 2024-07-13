@@ -67,9 +67,8 @@ public class ZapBullet extends GameObject implements Bullet {
 
         g2d.setTransform(rotation);
         g2d.drawImage(this.img, 0, 0, null);
-//        Color translucentColor = new Color(0, 0, 0, 0);
-//        g2d.setColor(translucentColor);
-        g2d.setColor(Color.RED);
+        Color translucentColor = new Color(0, 0, 0, 0);
+        g2d.setColor(translucentColor);
         g2d.drawRect(0, 0, this.img.getWidth(), this.img.getHeight());
         g2d.setTransform(originalTransform);
     }
@@ -93,5 +92,13 @@ public class ZapBullet extends GameObject implements Bullet {
 
     public int getParentID() {
         return this.parentID;
+    }
+
+    public float getX() {
+        return this.x;
+    }
+
+    public float getY() {
+        return this.y;
     }
 }

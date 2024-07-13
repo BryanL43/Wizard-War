@@ -74,20 +74,43 @@ public class GameWorld extends JPanel implements Runnable {
                 if (i == j) continue; //if same object then ignore
 
                 GameObject obj2 = gameObjs.get(j);
-                if (obj1.getHitbox().intersects(obj2.getHitbox())) {
-                    obj1.collides(obj2);
+                if (!(obj1 instanceof ZapBullet)) {
+                    if (obj1.getHitbox().intersects(obj2.getHitbox())) {
+                        obj1.collides(obj2);
 
-                    if (!aniDebounce &&
-                            (obj1 instanceof MagicBullet) && !((MagicBullet) obj1).isActive() ||
-                            (obj1 instanceof NormalBullet && !((NormalBullet) obj1).isActive())) {
+                        if (!aniDebounce &&
+                                (obj1 instanceof MagicBullet) && !((MagicBullet) obj1).isActive() ||
+                                (obj1 instanceof NormalBullet && !((NormalBullet) obj1).isActive())) {
 
-                        aniDebounce = true;
-                        ImageIcon explosionIcon = ResourceManager.getAnimation("explosion");
-                        animations.add(new Animation(explosionIcon, obj1.getHitbox().x, obj1.getHitbox().y, 200));
+                            aniDebounce = true;
+                            ImageIcon explosionIcon = ResourceManager.getAnimation("explosion");
+                            animations.add(new Animation(explosionIcon, obj1.getHitbox().x, obj1.getHitbox().y, 200));
+                        }
+
+                        if (!(obj2 instanceof Bullet)) {
+                            obj2.collides(obj1);
+                        }
                     }
+                } else {
+                    if (obj2 instanceof Tank && ((Tank) obj2).getID() != ((ZapBullet) obj1).getParentID()) {
+                        double distance = Math.sqrt(Math.pow(obj1.getHitbox().getCenterX() - obj2.getHitbox().getCenterX(), 2) +
+                                Math.pow(obj1.getHitbox().getCenterY() - obj2.getHitbox().getCenterY(), 2));
+                        if (distance <= 90) {
+                            obj1.collides(obj2);
+                            if (!aniDebounce) {
+                                aniDebounce = true;
+                                ImageIcon zapEffectIcon = ResourceManager.getAnimation("zap");
+                                animations.add(new Animation(zapEffectIcon, (int) ((ZapBullet) obj1).getX() - (zapEffectIcon.getIconWidth() / 2), (int) ((ZapBullet) obj1).getY() - (zapEffectIcon.getIconHeight() / 2), 750));
+                            }
+                        }
+                    } else {
+                        if (obj1.getHitbox().intersects(obj2.getHitbox())) {
+                            obj1.collides(obj2);
 
-                    if (!(obj2 instanceof Bullet)) {
-                        obj2.collides(obj1);
+                            if (!(obj2 instanceof Bullet)) {
+                                obj2.collides(obj1);
+                            }
+                        }
                     }
                 }
             }
@@ -239,8 +262,8 @@ public class GameWorld extends JPanel implements Runnable {
     //Need to be static to allow access for tank to add bullet for collision handling
     public static void createBullet(int id, float x, float y, float angle, BufferedImage img) {
 //        NormalBullet newBullet = new NormalBullet(id, x, y, angle, img);
-        MagicBullet newBullet = new MagicBullet(id, x, y, angle, img);
-//        ZapBullet newBullet = new ZapBullet(id, x, y, angle, img);
+//        MagicBullet newBullet = new MagicBullet(id, x, y, angle, img);
+        ZapBullet newBullet = new ZapBullet(id, x, y, angle, img);
         gameObjs.add(newBullet);
     }
 }

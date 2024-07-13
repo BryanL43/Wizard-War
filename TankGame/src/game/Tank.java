@@ -122,7 +122,7 @@ public class Tank extends GameObject {
         if (this.ShootPressed) {
             this.ShootPressed = false;
 
-            BufferedImage bulletImg = ResourceManager.getSprite("magic bullet");
+            BufferedImage bulletImg = ResourceManager.getSprite("lightning ball");
 
 //            Timer timer = new Timer();
 //            timer.schedule(new TimerTask() {
