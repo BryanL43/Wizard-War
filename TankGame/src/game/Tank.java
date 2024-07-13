@@ -6,6 +6,8 @@ import TankGame.src.ResourceHandler.ResourceManager;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  *
@@ -31,6 +33,7 @@ public class Tank extends GameObject {
 
     private int health = 100;
     private boolean alive = true;
+    private int id;
 
     Tank(float x, float y, float vx, float vy, float angle, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
@@ -40,6 +43,7 @@ public class Tank extends GameObject {
         this.vy = vy;
         this.img = img;
         this.angle = angle;
+        this.id = (int)(Math.random() * Integer.MAX_VALUE) + 1;
     }
 
     void setX(float x){
@@ -118,9 +122,33 @@ public class Tank extends GameObject {
         if (this.ShootPressed) {
             this.ShootPressed = false;
 
-            BufferedImage bulletImg = ResourceManager.getSprite("bullet");
+            BufferedImage bulletImg = ResourceManager.getSprite("magic bullet");
 
-            float offsetDistance = 58;
+//            Timer timer = new Timer();
+//            timer.schedule(new TimerTask() {
+//                private int count = 0;
+//
+//                @Override
+//                public void run() {
+//                    if (count < 8) {
+//                        float offsetDistance = 58;
+//                        double radians = Math.toRadians(angle);
+//
+//                        float tankCenterX = x + img.getWidth() / 4.0f;
+//                        float tankCenterY = y + img.getHeight() / 4.0f;
+//
+//                        float bulletX = tankCenterX + ((float) (offsetDistance * Math.cos(radians)));
+//                        float bulletY = tankCenterY + ((float) (offsetDistance * Math.sin(radians)));
+//
+//                        GameWorld.createBullet(bulletX, bulletY, angle, bulletImg);
+//                        count++;
+//                    } else {
+//                        timer.cancel();
+//                    }
+//                }
+//            }, 0, 200);
+
+            float offsetDistance = 15;
             double radians = Math.toRadians(angle);
 
             float tankCenterX = x + img.getWidth() / 4.0f;
@@ -129,7 +157,7 @@ public class Tank extends GameObject {
             float bulletX = tankCenterX + ((float) (offsetDistance * Math.cos(radians)));
             float bulletY = tankCenterY + ((float) (offsetDistance * Math.sin(radians)));
 
-            GameWorld.createBullet(bulletX, bulletY, angle, bulletImg);
+            GameWorld.createBullet(id, bulletX, bulletY, angle, bulletImg);
         }
 
         hitbox.setLocation((int) x, (int) y);
@@ -242,5 +270,9 @@ public class Tank extends GameObject {
 
     public int getHealth() {
         return this.health;
+    }
+
+    public int getID() {
+        return this.id;
     }
 }

@@ -46,8 +46,11 @@ public class GameWorld extends JPanel implements Runnable {
                     if (obj instanceof NormalBullet) {
                         ((NormalBullet) obj).update();
                     }
-                    if (obj instanceof BouncingBullet) {
-                        ((BouncingBullet) obj).update();
+                    if (obj instanceof MagicBullet) {
+                        ((MagicBullet) obj).update();
+                    }
+                    if (obj instanceof ZapBullet) {
+                        ((ZapBullet) obj).update();
                     }
                 });
 
@@ -72,27 +75,16 @@ public class GameWorld extends JPanel implements Runnable {
 
                 GameObject obj2 = gameObjs.get(j);
                 if (obj1.getHitbox().intersects(obj2.getHitbox())) {
-                    System.out.println("Collided with obj");
                     obj1.collides(obj2);
 
-//                    if ((obj1 instanceof Bullet && !(obj1 instanceof BouncingBullet)) && !aniDebounce) {
-//                        aniDebounce = true;
-//                        ImageIcon explosionIcon = ResourceManager.getAnimation("explosion");
-//                        animations.add(new Animation(explosionIcon, obj1.getHitbox().x, obj1.getHitbox().y, 200));
-//                    }
-//
-//                    if (obj1 instanceof BouncingBullet && !aniDebounce && !((BouncingBullet) obj1).isActive()) {
-//                        aniDebounce = true;
-//                        ImageIcon explosionIcon = ResourceManager.getAnimation("explosion");
-//                        animations.add(new Animation(explosionIcon, obj1.getHitbox().x, obj1.getHitbox().y, 200));
-//                    }
+                    if (!aniDebounce &&
+                            (obj1 instanceof MagicBullet) && !((MagicBullet) obj1).isActive() ||
+                            (obj1 instanceof NormalBullet && !((NormalBullet) obj1).isActive())) {
 
-                    if (obj1 instanceof Bullet && !aniDebounce && (!(obj1 instanceof BouncingBullet) || !((BouncingBullet) obj1).isActive())) {
                         aniDebounce = true;
                         ImageIcon explosionIcon = ResourceManager.getAnimation("explosion");
                         animations.add(new Animation(explosionIcon, obj1.getHitbox().x, obj1.getHitbox().y, 200));
                     }
-
 
                     if (!(obj2 instanceof Bullet)) {
                         obj2.collides(obj1);
@@ -104,7 +96,8 @@ public class GameWorld extends JPanel implements Runnable {
 
         //Remove inactive bullets
         gameObjs.removeIf(obj -> obj instanceof NormalBullet && !((NormalBullet) obj).isActive());
-        gameObjs.removeIf(obj -> obj instanceof BouncingBullet && !((BouncingBullet) obj).isActive());
+        gameObjs.removeIf(obj -> obj instanceof MagicBullet && !((MagicBullet) obj).isActive());
+        gameObjs.removeIf(obj -> obj instanceof ZapBullet && !((ZapBullet) obj).isActive());
 
         //Remove breakable wall if hit
         gameObjs.removeIf(obj -> obj instanceof BreakableWall && ((BreakableWall) obj).isDestroyed());
@@ -244,9 +237,10 @@ public class GameWorld extends JPanel implements Runnable {
     }
 
     //Need to be static to allow access for tank to add bullet for collision handling
-    public static void createBullet(float x, float y, float angle, BufferedImage img) {
-//        NormalBullet newBullet = new NormalBullet(x, y, angle, img);
-        BouncingBullet newBullet = new BouncingBullet(x, y, angle, img);
+    public static void createBullet(int id, float x, float y, float angle, BufferedImage img) {
+//        NormalBullet newBullet = new NormalBullet(id, x, y, angle, img);
+        MagicBullet newBullet = new MagicBullet(id, x, y, angle, img);
+//        ZapBullet newBullet = new ZapBullet(id, x, y, angle, img);
         gameObjs.add(newBullet);
     }
 }

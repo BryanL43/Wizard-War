@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
-public class NormalBullet extends GameObject implements Bullet {
+public class MagicBullet extends GameObject implements Bullet {
     private float x;
     private float y;
     private float vx;
@@ -15,10 +15,11 @@ public class NormalBullet extends GameObject implements Bullet {
     private BufferedImage img;
     private boolean active = true;
     private int parentID;
+    private int bounceLeft = 1;
 
     private float R = 4;
 
-    NormalBullet(int id, float x, float y, float angle, BufferedImage img) {
+    MagicBullet(int id, float x, float y, float angle, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
 
         this.x = x;
@@ -28,6 +29,13 @@ public class NormalBullet extends GameObject implements Bullet {
         this.angle = angle;
         this.img = img;
         this.parentID = id;
+    }
+
+    //Applies an offset to prevent immediate double collision on bounce
+    private void applyOffset() {
+        x += Math.signum(vx) * 3;
+        y += Math.signum(vy) * 3;
+        hitbox.setLocation((int) x, (int) y);
     }
 
     @Override
@@ -47,8 +55,17 @@ public class NormalBullet extends GameObject implements Bullet {
     }
 
     private void checkBorder() {
-        if (x < 32 || x >= GameConstants.GAME_WORLD_WIDTH - 32 || y < 32 || y >= GameConstants.GAME_WORLD_HEIGHT - 32) {
-            this.active = false;
+        if (x < 32 || x >= GameConstants.GAME_WORLD_WIDTH - 32) {
+            vx = -vx;
+            angle = 180 - angle;
+            applyOffset();
+            this.bounceLeft--;
+        }
+        if (y < 32 || y >= GameConstants.GAME_WORLD_HEIGHT - 32) {
+            vy = -vy;
+            angle = -angle;
+            applyOffset();
+            this.bounceLeft--;
         }
     }
 
@@ -75,14 +92,36 @@ public class NormalBullet extends GameObject implements Bullet {
 
     @Override
     public void collides(GameObject otherObj) {
-        if (otherObj instanceof Tank otherTank) {
-            if (otherTank.getID() != parentID) { //Prevent damaging yourself
-                this.active = false;
-                otherTank.takeDamage(10);
-                System.out.println(otherTank.getHealth());
-            }
-        } else { //Hits any other object like walls
+        Rectangle otherHitbox = otherObj.getHitbox();
+
+        if (this.bounceLeft <= 0) {
             this.active = false;
+        }
+
+        if (this.hitbox.intersects(otherHitbox)) {
+            //Check if the other object is not the tank that fired the bullet
+            if (!(otherObj instanceof Tank && ((Tank) otherObj).getID() == this.parentID)) {
+                Rectangle intersection = this.hitbox.intersection(otherHitbox);
+
+                if (intersection.width >= intersection.height) { //Reflect vertically
+                    vy = -vy;
+                    angle = -angle;
+                    applyOffset();
+                } else { //Reflect horizontally
+                    vx = -vx;
+                    angle = 180 - angle;
+                    applyOffset();
+                }
+
+                this.bounceLeft--;
+
+                //Check if the other object is enemy tank
+                if (otherObj instanceof Tank) {
+                    ((Tank) otherObj).takeDamage(10);
+                    System.out.println(((Tank) otherObj).getHealth());
+                    this.active = false;
+                }
+            }
         }
     }
 

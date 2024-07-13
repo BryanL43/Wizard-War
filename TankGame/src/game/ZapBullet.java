@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
-public class BouncingBullet extends GameObject implements Bullet {
+public class ZapBullet extends GameObject implements Bullet {
     private float x;
     private float y;
     private float vx;
@@ -14,11 +14,11 @@ public class BouncingBullet extends GameObject implements Bullet {
     private float angle;
     private BufferedImage img;
     private boolean active = true;
-    private int bounceLeft = 2;
+    private int parentID;
 
-    private float R = 4;
+    private float R = 3;
 
-    BouncingBullet(float x, float y, float angle, BufferedImage img) {
+    ZapBullet(int id, float x, float y, float angle, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
 
         this.x = x;
@@ -27,13 +27,7 @@ public class BouncingBullet extends GameObject implements Bullet {
         this.vy = 0;
         this.angle = angle;
         this.img = img;
-    }
-
-    //Applies an offset to prevent immediate double collision on bounce
-    private void applyOffset() {
-        x += Math.signum(vx) * 2;
-        y += Math.signum(vy) * 2;
-        hitbox.setLocation((int) x, (int) y);
+        this.parentID = id;
     }
 
     @Override
@@ -53,24 +47,9 @@ public class BouncingBullet extends GameObject implements Bullet {
     }
 
     private void checkBorder() {
-        if (x < 32 || x >= GameConstants.GAME_WORLD_WIDTH - 32) {
-            vx = -vx;
-            angle = 180 - angle;
-            applyOffset();
+        if (x < 32 || x >= GameConstants.GAME_WORLD_WIDTH - 32 || y < 32 || y >= GameConstants.GAME_WORLD_HEIGHT - 32) {
+            this.active = false;
         }
-        if (y < 32 || y >= GameConstants.GAME_WORLD_HEIGHT - 32) {
-            vy = -vy;
-            angle = -angle;
-            applyOffset();
-        }
-    }
-
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
     }
 
     @Override
@@ -88,44 +67,31 @@ public class BouncingBullet extends GameObject implements Bullet {
 
         g2d.setTransform(rotation);
         g2d.drawImage(this.img, 0, 0, null);
-        Color translucentColor = new Color(0, 0, 0, 0);
-        g2d.setColor(translucentColor);
+//        Color translucentColor = new Color(0, 0, 0, 0);
+//        g2d.setColor(translucentColor);
+        g2d.setColor(Color.RED);
         g2d.drawRect(0, 0, this.img.getWidth(), this.img.getHeight());
         g2d.setTransform(originalTransform);
     }
 
     @Override
     public void collides(GameObject otherObj) {
-        Rectangle otherHitbox = otherObj.getHitbox();
-
-        if (this.bounceLeft <= 0) {
-            this.active = false;
-        }
-
-        if (this.hitbox.intersects(otherHitbox)) {
-            Rectangle intersection = this.hitbox.intersection(otherHitbox);
-
-            if (intersection.width >= intersection.height) { //Reflect vertically
-                vy = -vy;
-                angle = -angle;
-                applyOffset();
-                this.bounceLeft--;
-            } else { //Reflect horizontally
-                vx = -vx;
-                angle = 180 - angle;
-                applyOffset();
-                this.bounceLeft--;
-            }
-
-            if (otherObj instanceof Tank) {
-                ((Tank) otherObj).takeDamage(10);
-                System.out.println(((Tank) otherObj).getHealth());
+        if (otherObj instanceof Tank otherTank) {
+            if (otherTank.getID() != parentID) { //Prevent damaging yourself
                 this.active = false;
+                otherTank.takeDamage(10);
+                System.out.println(otherTank.getHealth());
             }
+        } else { //Hits any other object like walls
+            this.active = false;
         }
     }
 
     public boolean isActive() {
         return this.active;
+    }
+
+    public int getParentID() {
+        return this.parentID;
     }
 }

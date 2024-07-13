@@ -38,6 +38,7 @@ public class ResourceManager {
         ResourceManager.sprites.put("solid wall", loadSprite("TankGame/resources/walls/wall1.png"));
         ResourceManager.sprites.put("breakable wall", loadSprite("TankGame/resources/walls/wall2.png"));
         ResourceManager.sprites.put("bullet", loadSprite("TankGame/resources/bullets/Shell.gif"));
+        ResourceManager.sprites.put("magic bullet", loadSprite("TankGame/resources/bullets/magicBullet.gif"));
     }
 
     private static void initAnimations() {
