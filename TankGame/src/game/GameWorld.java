@@ -21,13 +21,25 @@ import java.util.Objects;
 public class GameWorld extends JPanel implements Runnable {
 
     private BufferedImage world;
-    private Tank t1;
-    private Tank t2;
+    private static Tank t1;
+    private static Tank t2;
     private final Launcher lf;
     private long tick = 0;
     private static final List<GameObject> gameObjs = new ArrayList<>(); //static to allow access by tank to add
     private final List<Animation> animations = new ArrayList<>();
     private boolean aniDebounce = false;
+
+    private JLabel t1Spell = new JLabel();
+    private JLabel t2Spell = new JLabel();
+    private JPanel window = new JPanel();
+    private static JProgressBar healthBar = new JProgressBar(0, 100);
+    private static JProgressBar healthBar2 = new JProgressBar(0, 100);
+    private JProgressBar rechargeBar = new JProgressBar(0, 100);
+    private JProgressBar rechargeBar2 = new JProgressBar(0, 100);
+    private JPanel timerPanel = new JPanel();
+    private JLabel timerLabel = new JLabel();
+    private int time = 26100;
+    private JPanel minimap = new JPanel();
 
     public GameWorld(Launcher lf) {
         this.lf = lf;
@@ -38,6 +50,10 @@ public class GameWorld extends JPanel implements Runnable {
         try {
             while (true) {
                 this.tick++;
+                if (this.tick++ == 26100) {
+                    System.exit(0);
+                }
+                updateTimer();
                 this.t1.update();
                 this.t2.update(); // update tank
                 this.repaint();   // redraw game
@@ -301,6 +317,127 @@ public class GameWorld extends JPanel implements Runnable {
         g2.drawLine(halfScreenWidth - borderThickness / 2, 0, halfScreenWidth - borderThickness / 2, GameConstants.GAME_SCREEN_HEIGHT);
 
         buffer.dispose();
+    }
+
+    public void createSubUI() {
+        setLayout(new BorderLayout());
+
+        //Configure the main window panel
+        window.setBackground(Color.gray);
+        window.setPreferredSize(new Dimension(GameConstants.GAME_SCREEN_WIDTH, 100));
+        window.setLayout(new BorderLayout());
+        add(window, BorderLayout.SOUTH);
+
+        //Create and configure the health panel
+        JPanel healthPanel = new JPanel();
+        healthPanel.setBackground(Color.gray);
+        healthPanel.setLayout(null);
+        healthPanel.setPreferredSize(new Dimension(GameConstants.GAME_SCREEN_WIDTH, 90));
+
+        //Configure and add health bars to the health panel
+        healthBar.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 4) - 160), 10, 300, 20);
+        healthBar.setValue(100);
+        healthBar.setBackground(Color.red);
+        healthBar.setForeground(Color.green);
+        healthBar.setBorderPainted(false);
+        healthPanel.add(healthBar);
+
+        healthBar2.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 2) + (GameConstants.GAME_SCREEN_WIDTH / 8)), 10, 300, 20);
+        healthBar2.setValue(100);
+        healthBar2.setBackground(Color.blue);
+        healthBar2.setForeground(Color.green);
+        healthBar2.setBorderPainted(false);
+        healthPanel.add(healthBar2);
+
+        //Load and add tank images to the health panel
+        BufferedImage tankImage = ResourceManager.getSprite("tank1");
+        JLabel picLabel = new JLabel(new ImageIcon(tankImage));
+        picLabel.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 8) - 100), 10, 50, 50);
+        healthPanel.add(picLabel);
+
+        BufferedImage tank2Image = ResourceManager.getSprite("tank2");
+        JLabel pict2Label = new JLabel(new ImageIcon(tank2Image));
+        pict2Label.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 2) + 50), 10, 50, 50);
+        healthPanel.add(pict2Label);
+
+        //Configure and add recharge bars to the health panel
+        rechargeBar.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 4) - 160), 40, 300, 15);
+        rechargeBar.setValue(0);
+        rechargeBar.setBackground(Color.lightGray);
+        rechargeBar.setForeground(Color.yellow);
+        rechargeBar.setBorderPainted(false);
+        healthPanel.add(rechargeBar);
+
+        rechargeBar2.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 2) + (GameConstants.GAME_SCREEN_WIDTH / 8)), 40, 300, 15);
+        rechargeBar2.setValue(0);
+        rechargeBar2.setBackground(Color.lightGray);
+        rechargeBar2.setForeground(Color.yellow);
+        rechargeBar2.setBorderPainted(false);
+        healthPanel.add(rechargeBar2);
+
+        //Configure and add spell labels to the health panel
+        t1Spell.setText("<< " + "Current Spell" + " >>");
+        t1Spell.setForeground(Color.BLACK);
+        t1Spell.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 4) - 160), 60, 300, 20);
+        t1Spell.setFont(new Font("Arial", Font.BOLD, 20));
+        healthPanel.add(t1Spell);
+
+        t2Spell.setText("<< " + "Current Spell" + " >>");
+        t2Spell.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 2) + (GameConstants.GAME_SCREEN_WIDTH / 8)), 60, 300, 20);
+        t2Spell.setForeground(Color.BLACK);
+        t2Spell.setFont(new Font("Arial", Font.BOLD, 20));
+        healthPanel.add(t2Spell);
+
+        //Add the health panel to the window panel
+        window.add(healthPanel, BorderLayout.CENTER);
+
+        //Configure and add the timer panel
+        timerPanel.setBackground(Color.gray);
+        timerPanel.setLayout(new FlowLayout());
+        timerPanel.setBounds(0,0,GameConstants.GAME_SCREEN_WIDTH, GameConstants.GAME_SCREEN_HEIGHT);
+        add(timerPanel, BorderLayout.NORTH);
+
+        //Add panel behind timerLabel
+        JPanel textPanel = new JPanel();
+        textPanel.setBackground(Color.white);
+        textPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        textPanel.setBounds(((GameConstants.GAME_SCREEN_WIDTH/2)/8), 20, 20, 45);
+        timerPanel.add(textPanel);
+
+        //Configure and add the timer label to the timer panel
+        timerLabel.setText("Timer: " + time);
+        timerLabel.setForeground(Color.black);
+        timerLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        textPanel.add(timerLabel);
+
+        //Configure and add minimap
+        minimap.setOpaque(false);
+        minimap.setLayout(null);
+        add(minimap, BorderLayout.CENTER);
+
+        //Panel for minimap
+        JPanel map = new JPanel();
+        map.setBackground(Color.ORANGE);
+        map.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 2) - 100),((GameConstants.GAME_SCREEN_HEIGHT - 265)),200,100);
+        map.setLayout(null);
+        map.setBorder(BorderFactory.createLineBorder(Color.black));
+        minimap.add(map);
+
+        setComponentZOrder(minimap, 0);
+
+        timerPanel.setOpaque(false);
+        window.setVisible(true);
+        timerPanel.setVisible(true);
+    }
+
+    public static void updateSubUI() {
+        healthBar.setValue(t1.getHealth());
+        healthBar2.setValue(t2.getHealth());
+    }
+
+    private void updateTimer() {
+        timerLabel.setText(((time / 145) / 60) + ":" + ((time / 145) % 60));
+        time--;
     }
 
     //Need to be static to allow access for tank to add bullet for collision handling

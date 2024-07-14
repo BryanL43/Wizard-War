@@ -52,6 +52,7 @@ public class Launcher {
         JPanel startPanel = new StartMenuPanel(this); // create a new start panel
         this.gamePanel = new GameWorld(this); // create a new game panel
         this.gamePanel.InitializeGame(); // initialize game, but DO NOT start game
+        this.gamePanel.createSubUI();
         /*
          * end panel is used to show the end game panel.  it will contain
          * two buttons restart and exit.

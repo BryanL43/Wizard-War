@@ -263,6 +263,7 @@ public class Tank extends GameObject {
 
     public void takeDamage(int amount) {
         this.health -= amount;
+        GameWorld.updateSubUI();
         if (this.health <= 0) {
             System.exit(0);
         }
