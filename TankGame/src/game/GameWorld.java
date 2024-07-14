@@ -54,8 +54,8 @@ public class GameWorld extends JPanel implements Runnable {
                     System.exit(0);
                 }
                 updateTimer();
-                this.t1.update();
-                this.t2.update(); // update tank
+                t1.update();
+                t2.update(); // update tank
                 this.repaint();   // redraw game
                 this.checkCollision();
                 gameObjs.forEach(obj -> {
@@ -192,8 +192,8 @@ public class GameWorld extends JPanel implements Runnable {
      */
     public void resetGame() {
         this.tick = 0;
-        this.t1.setX(300);
-        this.t1.setY(300);
+        t1.setX(300);
+        t1.setY(300);
     }
 
     /**
@@ -292,10 +292,10 @@ public class GameWorld extends JPanel implements Runnable {
             }
         }
 
-        int screenX1 = calculateScreenX((int) this.t1.getX());
-        int screenX2 = calculateScreenX((int) this.t2.getX());
-        int screenY1 = calculateScreenY((int) this.t1.getY());
-        int screenY2 = calculateScreenY((int) this.t2.getY());
+        int screenX1 = calculateScreenX((int) t1.getX());
+        int screenX2 = calculateScreenX((int) t2.getX());
+        int screenY1 = calculateScreenY((int) t1.getY());
+        int screenY2 = calculateScreenY((int) t2.getY());
 
         //Ensure the requested sub images do not exceed the bounds of the world image
         int halfScreenWidth = GameConstants.GAME_SCREEN_WIDTH / 2;
@@ -312,9 +312,8 @@ public class GameWorld extends JPanel implements Runnable {
 
         //Draw border between split screen
         g2.setColor(Color.BLACK);
-        int borderThickness = 10;
-        g2.setStroke(new BasicStroke(borderThickness));
-        g2.drawLine(halfScreenWidth - borderThickness / 2, 0, halfScreenWidth - borderThickness / 2, GameConstants.GAME_SCREEN_HEIGHT);
+        g2.setStroke(new BasicStroke(1));
+        g2.drawLine(halfScreenWidth, 0, halfScreenWidth, GameConstants.GAME_SCREEN_HEIGHT);
 
         buffer.dispose();
     }
@@ -322,13 +321,13 @@ public class GameWorld extends JPanel implements Runnable {
     public void createSubUI() {
         setLayout(new BorderLayout());
 
-        //Configure the main window panel
+        //Create the main window panel
         window.setBackground(Color.gray);
         window.setPreferredSize(new Dimension(GameConstants.GAME_SCREEN_WIDTH, 100));
         window.setLayout(new BorderLayout());
         add(window, BorderLayout.SOUTH);
 
-        //Create and configure the health panel
+        //Create the health panel
         JPanel healthPanel = new JPanel();
         healthPanel.setBackground(Color.gray);
         healthPanel.setLayout(null);
@@ -360,7 +359,7 @@ public class GameWorld extends JPanel implements Runnable {
         pict2Label.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 2) + 50), 10, 50, 50);
         healthPanel.add(pict2Label);
 
-        //Configure and add recharge bars to the health panel
+        //Add recharge bars to the health panel
         rechargeBar.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 4) - 160), 40, 300, 15);
         rechargeBar.setValue(0);
         rechargeBar.setBackground(Color.lightGray);
@@ -375,7 +374,7 @@ public class GameWorld extends JPanel implements Runnable {
         rechargeBar2.setBorderPainted(false);
         healthPanel.add(rechargeBar2);
 
-        //Configure and add spell labels to the health panel
+        //Add spell labels to the health panel
         t1Spell.setText("<< " + "Current Spell" + " >>");
         t1Spell.setForeground(Color.BLACK);
         t1Spell.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 4) - 160), 60, 300, 20);
@@ -391,34 +390,38 @@ public class GameWorld extends JPanel implements Runnable {
         //Add the health panel to the window panel
         window.add(healthPanel, BorderLayout.CENTER);
 
-        //Configure and add the timer panel
+        //Add the timer panel
         timerPanel.setBackground(Color.gray);
         timerPanel.setLayout(new FlowLayout());
         timerPanel.setBounds(0,0,GameConstants.GAME_SCREEN_WIDTH, GameConstants.GAME_SCREEN_HEIGHT);
-        add(timerPanel, BorderLayout.NORTH);
+        add(timerPanel, BorderLayout.CENTER);
 
         //Add panel behind timerLabel
         JPanel textPanel = new JPanel();
         textPanel.setBackground(Color.white);
         textPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        textPanel.setBounds(((GameConstants.GAME_SCREEN_WIDTH/2)/8), 20, 20, 45);
+        textPanel.setBounds(0, 0, 20, 45);
         timerPanel.add(textPanel);
 
-        //Configure and add the timer label to the timer panel
+        //Add the timer label to the timer panel
         timerLabel.setText("Timer: " + time);
         timerLabel.setForeground(Color.black);
         timerLabel.setFont(new Font("Arial", Font.BOLD, 18));
         textPanel.add(timerLabel);
 
-        //Configure and add minimap
+        //Add minimap
+        minimap.setOpaque(false);
+        minimap.setLayout(null);
+        add(minimap, BorderLayout.CENTER);
+
         minimap.setOpaque(false);
         minimap.setLayout(null);
         add(minimap, BorderLayout.CENTER);
 
         //Panel for minimap
-        JPanel map = new JPanel();
-        map.setBackground(Color.ORANGE);
-        map.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 2) - 100),((GameConstants.GAME_SCREEN_HEIGHT - 265)),200,100);
+        BufferedImage mm = world.getSubimage(0, 0, GameConstants.GAME_WORLD_WIDTH, GameConstants.GAME_WORLD_HEIGHT);
+        MinimapPanel map = new MinimapPanel(mm);
+        map.setBounds((GameConstants.GAME_SCREEN_WIDTH / 2) - 154, (GameConstants.GAME_SCREEN_HEIGHT - 369), 307, 230);
         map.setLayout(null);
         map.setBorder(BorderFactory.createLineBorder(Color.black));
         minimap.add(map);
