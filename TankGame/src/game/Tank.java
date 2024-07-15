@@ -34,9 +34,9 @@ public class Tank extends GameObject {
     private long shootStartTime = 0;
     private boolean isShootInProgress = false;
     private long deltaTime;
+    private boolean isShooting = false; //Specifically to prevent casting while shooting magic bullet
 
     private Timer shootTimer;
-    private TimerTask shootTask;
 
     private int health = 100;
     private int id;
@@ -88,7 +88,7 @@ public class Tank extends GameObject {
     }
 
     void toggleShootPressed() {
-        if (!isShootInProgress) {
+        if (!isShootInProgress && playerHandler.getSpellsLeft() > 0 && !isShooting) {
             this.ShootPressed = true;
             this.shootStartTime = System.currentTimeMillis();
             this.isShootInProgress = true;
@@ -125,6 +125,9 @@ public class Tank extends GameObject {
                 double radians = Math.toRadians(angle);
 
                 if (currentSpell.equals("magic bullet")) {
+                    isShooting = true;
+                    playerHandler.subtractSpellUsage();
+
                     Timer timer = new Timer();
                     TimerTask mainTask = new TimerTask() {
                         private int count = 0;
@@ -152,10 +155,13 @@ public class Tank extends GameObject {
                         @Override
                         public void run() {
                             Tank.this.R = 2;
+                            Tank.this.isShooting = false;
                         }
                     };
                     timer.schedule(updateRTask, 1500);
                 } else {
+                    playerHandler.subtractSpellUsage();
+
                     //Duplicate to track player's movement
                     float tankCenterX = x + img.getWidth() / 4.0f;
                     float tankCenterY = y + img.getHeight() / 4.0f;

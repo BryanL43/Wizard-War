@@ -28,7 +28,7 @@ public class GameWorld extends JPanel implements Runnable {
     private Player p2;
     private final Launcher lf;
     private long tick = 0;
-    private static List<GameObject> gameObjs = new ArrayList<>(); //static to allow access by tank to add
+    private static List<GameObject> gameObjs = new ArrayList<>(1000); //static to allow access by tank to add
     private List<Animation> animations = new ArrayList<>();
     private boolean aniDebounce = false;
 
@@ -70,9 +70,6 @@ public class GameWorld extends JPanel implements Runnable {
                 this.repaint();   // redraw game
                 this.checkCollision();
                 gameObjs.forEach(obj -> {
-                    if (obj instanceof NormalBullet) {
-                        ((NormalBullet) obj).update();
-                    }
                     if (obj instanceof MagicBullet) {
                         ((MagicBullet) obj).update();
                     }
@@ -242,7 +239,7 @@ public class GameWorld extends JPanel implements Runnable {
      * initial state as well.
      */
     public void InitializeGame() {
-        gameObjs = new ArrayList<>();
+        gameObjs = new ArrayList<>(1000);
         animations = new ArrayList<>();
 
         this.world = new BufferedImage(GameConstants.GAME_WORLD_WIDTH,
@@ -251,7 +248,7 @@ public class GameWorld extends JPanel implements Runnable {
 
         BufferedImage t1img = ResourceManager.getSprite("wizard1");
         t1 = new Tank(224, 718, 0, 0, (short) 0, t1img);
-        TankControl tc1 = new TankControl(t1, KeyEvent.VK_W, KeyEvent.VK_S, KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_F, KeyEvent.VK_Q, KeyEvent.VK_E);
+        TankControl tc1 = new TankControl(t1, KeyEvent.VK_W, KeyEvent.VK_S, KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_F, KeyEvent.VK_Q, KeyEvent.VK_E, KeyEvent.VK_R);
         this.lf.getJf().addKeyListener(tc1);
         gameObjs.add(t1);
 
@@ -263,7 +260,7 @@ public class GameWorld extends JPanel implements Runnable {
 
         BufferedImage t2img = ResourceManager.getSprite("wizard2");
         t2 = new Tank(1775, 718, 0, 0, (short) 0, t2img);
-        TankControl tc2 = new TankControl(t2, KeyEvent.VK_U, KeyEvent.VK_J, KeyEvent.VK_H, KeyEvent.VK_K, KeyEvent.VK_L, KeyEvent.VK_Y, KeyEvent.VK_I);
+        TankControl tc2 = new TankControl(t2, KeyEvent.VK_U, KeyEvent.VK_J, KeyEvent.VK_H, KeyEvent.VK_K, KeyEvent.VK_L, KeyEvent.VK_Y, KeyEvent.VK_I, KeyEvent.VK_O);
         this.lf.getJf().addKeyListener(tc2);
         gameObjs.add(t2);
 
@@ -451,13 +448,13 @@ public class GameWorld extends JPanel implements Runnable {
         healthPanel.add(rechargeBar2);
 
         //Add spell labels to the health panel
-        t1Spell.setText("<< " + p1.getSpellName() + " >>");
+        t1Spell.setText("<< " + p1.getSpellName() + " (" + p1.getSpellsLeft() + ") " + " >>");
         t1Spell.setForeground(Color.BLACK);
         t1Spell.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 4) - 160), 60, 300, 20);
         t1Spell.setFont(new Font("Arial", Font.BOLD, 20));
         healthPanel.add(t1Spell);
 
-        t2Spell.setText("<< " + p2.getSpellName() + " >>");
+        t2Spell.setText("<< " + p2.getSpellName() + " (" + p2.getSpellsLeft() + ") " + " >>");
         t2Spell.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 2) + (GameConstants.GAME_SCREEN_WIDTH / 8)), 60, 300, 20);
         t2Spell.setForeground(Color.BLACK);
         t2Spell.setFont(new Font("Arial", Font.BOLD, 20));
@@ -502,7 +499,7 @@ public class GameWorld extends JPanel implements Runnable {
         //Panel for minimap
         BufferedImage mm = world.getSubimage(0, 0, GameConstants.GAME_WORLD_WIDTH, GameConstants.GAME_WORLD_HEIGHT);
         MinimapPanel map = new MinimapPanel(mm);
-        map.setBounds((GameConstants.GAME_SCREEN_WIDTH / 2) - 154, (GameConstants.GAME_SCREEN_HEIGHT - 359), 307, 230);
+        map.setBounds((GameConstants.GAME_SCREEN_WIDTH / 2) - 154, (GameConstants.GAME_SCREEN_HEIGHT - 356), 307, 230);
         map.setLayout(null);
         map.setBorder(BorderFactory.createLineBorder(Color.black));
         minimap.add(map);
@@ -520,8 +517,8 @@ public class GameWorld extends JPanel implements Runnable {
     }
 
     public void updateSpellLabel() {
-        t1Spell.setText("<< " + p1.getSpellName() + " >>");
-        t2Spell.setText("<< " + p2.getSpellName() + " >>");
+        t1Spell.setText("<< " + p1.getSpellName() + " (" + p1.getSpellsLeft() + ") " + " >>");
+        t2Spell.setText("<< " + p2.getSpellName() + " (" + p2.getSpellsLeft() + ") " + " >>");
     }
 
     private void updateTimer() {

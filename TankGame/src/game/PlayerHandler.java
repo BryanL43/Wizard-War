@@ -4,9 +4,9 @@ package TankGame.src.game;
 public interface PlayerHandler {
     void onHealthChange(int newHealth);
     int getCurrentSpell();
+    int getSpellsLeft();
     void spellChange(int spellIndex);
     String getSpellName();
+    void subtractSpellUsage();
     int getMaxSpell();
-    void setChargeTime(int timeLapsed);
-    int getChargeTime();
 }

@@ -16,8 +16,11 @@ public class TankControl implements KeyListener {
     private final int shoot;
     private final int prevSpell;
     private final int nextSpell;
+    private final int meditate;
 
-    public TankControl(Tank t1, int up, int down, int left, int right, int shoot, int prevSpell, int nextSpell) {
+    private boolean canSwitchSpell = true;
+
+    public TankControl(Tank t1, int up, int down, int left, int right, int shoot, int prevSpell, int nextSpell, int meditate) {
         this.t1 = t1;
         this.up = up;
         this.down = down;
@@ -26,6 +29,7 @@ public class TankControl implements KeyListener {
         this.shoot = shoot;
         this.prevSpell = prevSpell;
         this.nextSpell = nextSpell;
+        this.meditate = meditate;
     }
 
     @Override
@@ -49,6 +53,7 @@ public class TankControl implements KeyListener {
             this.t1.toggleRightPressed();
         }
         if (keyPressed == shoot) {
+            canSwitchSpell = false;
             this.t1.toggleShootPressed();
         }
     }
@@ -69,12 +74,13 @@ public class TankControl implements KeyListener {
             this.t1.unToggleRightPressed();
         }
         if (keyReleased == shoot) {
+            canSwitchSpell = true;
             this.t1.unToggleShootPressed();
         }
-        if (keyReleased == prevSpell) {
+        if (keyReleased == prevSpell && canSwitchSpell) {
             this.t1.changePrevSpell();
         }
-        if (keyReleased == nextSpell) {
+        if (keyReleased == nextSpell && canSwitchSpell) {
             this.t1.changeNextSpell();
         }
     }

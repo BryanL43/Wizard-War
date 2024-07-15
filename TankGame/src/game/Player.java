@@ -1,5 +1,7 @@
 package TankGame.src.game;
 
+import TankGame.src.ResourceHandler.Pair;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,12 +12,14 @@ public class Player implements PlayerHandler {
     private GameWorld game;
     private int chargeTime = 0;
 
-    private final List<String> spellCarousel = new ArrayList<>();
+//    private final List<String> spellCarousel = new ArrayList<>();
+    //List index for spell rotation and pair for the amount of usage for a specific spell
+    private final List<Pair<String, Integer>> spellCarousel = new ArrayList<>();
 
     public Player(int lives, int spellIndex, Tank playerCharacter, GameWorld game) {
-        spellCarousel.add("magic bullet"); //index 0
-        spellCarousel.add("lightning ball"); //index 1
-        spellCarousel.add("fire ball"); //index 2
+        spellCarousel.add(new Pair<>("magic bullet", 5)); //index 0
+        spellCarousel.add(new Pair<>("lightning ball", 2)); //index 1
+        spellCarousel.add(new Pair<>("fire ball", 3)); //index 2
 
         this.lives = lives;
         this.currentSpell = spellIndex;
@@ -53,6 +57,11 @@ public class Player implements PlayerHandler {
     }
 
     @Override
+    public int getSpellsLeft() {
+        return this.spellCarousel.get(currentSpell).getR();
+    }
+
+    @Override
     public void spellChange(int spellIndex) {
         this.currentSpell = spellIndex;
         game.updateSpellLabel();
@@ -60,21 +69,18 @@ public class Player implements PlayerHandler {
 
     @Override
     public String getSpellName() {
-        return spellCarousel.get(currentSpell);
+        return spellCarousel.get(currentSpell).getL();
+    }
+
+    @Override
+    public void subtractSpellUsage() {
+        int spellsLeft = spellCarousel.get(currentSpell).getR() - 1;
+        this.spellCarousel.get(currentSpell).setR(spellsLeft);
+        game.updateSpellLabel();
     }
 
     @Override
     public int getMaxSpell() {
         return this.spellCarousel.size();
-    }
-
-    @Override
-    public void setChargeTime(int timeLapsed) {
-        this.chargeTime = timeLapsed;
-    }
-
-    @Override
-    public int getChargeTime() {
-        return this.chargeTime;
     }
 }
