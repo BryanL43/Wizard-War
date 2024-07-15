@@ -21,19 +21,28 @@ public class Tank extends GameObject {
     private float vy;
     private float angle;
 
-    private float R = 2;
-    private float ROTATIONSPEED = 3.0f;
+    private float R = 2; //1f for casting and shooting
+    private float ROTATIONSPEED = 2.5f;
 
     private BufferedImage img;
     private boolean UpPressed;
     private boolean DownPressed;
     private boolean RightPressed;
     private boolean LeftPressed;
+
     private boolean ShootPressed = false;
+    private long shootStartTime = 0;
+    private boolean isShootInProgress = false;
+    private long deltaTime;
+
+    private Timer shootTimer;
+    private TimerTask shootTask;
 
     private int health = 100;
-    private boolean alive = true;
     private int id;
+
+    private PlayerHandler playerHandler;
+    private boolean stopAttack = false;
 
     Tank(float x, float y, float vx, float vy, float angle, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
@@ -79,7 +88,12 @@ public class Tank extends GameObject {
     }
 
     void toggleShootPressed() {
-        this.ShootPressed = true;
+        if (!isShootInProgress) {
+            this.ShootPressed = true;
+            this.shootStartTime = System.currentTimeMillis();
+            this.isShootInProgress = true;
+            this.R = 1.2f;
+        }
     }
 
     void unToggleUpPressed() {
@@ -99,7 +113,90 @@ public class Tank extends GameObject {
     }
 
     void unToggleShootPressed() {
-        this.ShootPressed = false;
+        if (isShootInProgress) {
+            this.ShootPressed = false;
+            long elapsedTime = System.currentTimeMillis() - shootStartTime;
+
+            if (elapsedTime >= 1300) {
+                String currentSpell = playerHandler.getSpellName();
+                BufferedImage bulletImg = ResourceManager.getSprite(currentSpell);
+
+                float offsetDistance = 15;
+                double radians = Math.toRadians(angle);
+
+                if (currentSpell.equals("magic bullet")) {
+                    Timer timer = new Timer();
+                    TimerTask mainTask = new TimerTask() {
+                        private int count = 0;
+
+                        @Override
+                        public void run() {
+                            if (count < 5 && !stopAttack) {
+                                // Duplicate to track player's movement
+                                float tankCenterX = x + img.getWidth() / 4.0f;
+                                float tankCenterY = y + img.getHeight() / 4.0f;
+                                float bulletX = tankCenterX + ((float) (offsetDistance * Math.cos(radians)));
+                                float bulletY = tankCenterY + ((float) (offsetDistance * Math.sin(radians)));
+
+                                GameWorld.createBullet(currentSpell, id, bulletX, bulletY, angle, bulletImg);
+                                count++;
+                            } else {
+                                timer.cancel();
+                            }
+                        }
+                    };
+                    timer.schedule(mainTask, 0, 300);
+
+                    //After magic bullet finishes then resume normal speed
+                    TimerTask updateRTask = new TimerTask() {
+                        @Override
+                        public void run() {
+                            Tank.this.R = 2;
+                        }
+                    };
+                    timer.schedule(updateRTask, 1500);
+                } else {
+                    //Duplicate to track player's movement
+                    float tankCenterX = x + img.getWidth() / 4.0f;
+                    float tankCenterY = y + img.getHeight() / 4.0f;
+                    float bulletX = tankCenterX + ((float) (offsetDistance * Math.cos(radians)));
+                    float bulletY = tankCenterY + ((float) (offsetDistance * Math.sin(radians)));
+
+                    GameWorld.createBullet(currentSpell, id, bulletX, bulletY, angle, bulletImg);
+                    this.R = 2;
+                }
+                deltaTime = 0;
+                stopAttack = false;
+            } else {
+                this.R = 2;
+                deltaTime = 0;
+            }
+
+            this.isShootInProgress = false;
+            this.shootStartTime = 0;
+
+            // Cancel any ongoing timer task if shoot is released early
+            if (shootTimer != null) {
+                shootTimer.cancel();
+                shootTimer = null;
+            }
+        }
+    }
+
+    void changePrevSpell() {
+        if (playerHandler.getCurrentSpell() - 1 < 0) {
+            playerHandler.spellChange(playerHandler.getMaxSpell() - 1);
+            return;
+        }
+        playerHandler.spellChange(playerHandler.getCurrentSpell() - 1);
+    }
+
+    void changeNextSpell() {
+        if (playerHandler.getCurrentSpell() + 1 > playerHandler.getMaxSpell() - 1) {
+            playerHandler.spellChange(0);
+            return;
+        }
+        playerHandler.spellChange(playerHandler.getCurrentSpell() + 1);
     }
 
     void update() {
@@ -120,44 +217,7 @@ public class Tank extends GameObject {
         }
 
         if (this.ShootPressed) {
-            this.ShootPressed = false;
-
-            BufferedImage bulletImg = ResourceManager.getSprite("fire ball");
-
-//            Timer timer = new Timer();
-//            timer.schedule(new TimerTask() {
-//                private int count = 0;
-//
-//                @Override
-//                public void run() {
-//                    if (count < 8) {
-//                        float offsetDistance = 58;
-//                        double radians = Math.toRadians(angle);
-//
-//                        float tankCenterX = x + img.getWidth() / 4.0f;
-//                        float tankCenterY = y + img.getHeight() / 4.0f;
-//
-//                        float bulletX = tankCenterX + ((float) (offsetDistance * Math.cos(radians)));
-//                        float bulletY = tankCenterY + ((float) (offsetDistance * Math.sin(radians)));
-//
-//                        GameWorld.createBullet(bulletX, bulletY, angle, bulletImg);
-//                        count++;
-//                    } else {
-//                        timer.cancel();
-//                    }
-//                }
-//            }, 0, 200);
-
-            float offsetDistance = 15;
-            double radians = Math.toRadians(angle);
-
-            float tankCenterX = x + img.getWidth() / 4.0f;
-            float tankCenterY = y + img.getHeight() / 4.0f;
-
-            float bulletX = tankCenterX + ((float) (offsetDistance * Math.cos(radians)));
-            float bulletY = tankCenterY + ((float) (offsetDistance * Math.sin(radians)));
-
-            GameWorld.createBullet(id, bulletX, bulletY, angle, bulletImg);
+            deltaTime = System.currentTimeMillis() - shootStartTime;
         }
 
         hitbox.setLocation((int) x, (int) y);
@@ -263,17 +323,31 @@ public class Tank extends GameObject {
 
     public void takeDamage(int amount) {
         this.health -= amount;
+        playerHandler.onHealthChange(this.health);
         GameWorld.updateSubUI();
-        if (this.health <= 0) {
-            System.exit(0);
-        }
     }
 
     public int getHealth() {
         return this.health;
     }
 
+    public void resetHealth() {
+        this.health = 100;
+    }
+
     public int getID() {
         return this.id;
+    }
+
+    public void setPlayerHandler(PlayerHandler listener) {
+        this.playerHandler = listener;
+    }
+
+    public void stopAttack() {
+        this.stopAttack = true;
+    }
+
+    public long getDeltaTime() {
+        return this.deltaTime;
     }
 }

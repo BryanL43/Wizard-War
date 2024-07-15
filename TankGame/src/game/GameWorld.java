@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Iterator;
 
 /**
  * @author anthony-pc
@@ -23,10 +24,12 @@ public class GameWorld extends JPanel implements Runnable {
     private BufferedImage world;
     private static Tank t1;
     private static Tank t2;
+    private Player p1;
+    private Player p2;
     private final Launcher lf;
     private long tick = 0;
-    private static final List<GameObject> gameObjs = new ArrayList<>(); //static to allow access by tank to add
-    private final List<Animation> animations = new ArrayList<>();
+    private static List<GameObject> gameObjs = new ArrayList<>(); //static to allow access by tank to add
+    private List<Animation> animations = new ArrayList<>();
     private boolean aniDebounce = false;
 
     private JLabel t1Spell = new JLabel();
@@ -34,12 +37,16 @@ public class GameWorld extends JPanel implements Runnable {
     private JPanel window = new JPanel();
     private static JProgressBar healthBar = new JProgressBar(0, 100);
     private static JProgressBar healthBar2 = new JProgressBar(0, 100);
-    private JProgressBar rechargeBar = new JProgressBar(0, 100);
-    private JProgressBar rechargeBar2 = new JProgressBar(0, 100);
+    private static JProgressBar rechargeBar = new JProgressBar(0, 1200);
+    private static JProgressBar rechargeBar2 = new JProgressBar(0, 1200);
     private JPanel timerPanel = new JPanel();
     private JLabel timerLabel = new JLabel();
     private int time = 26100;
     private JPanel minimap = new JPanel();
+    private MinimapPanel map;
+
+    private JLabel player1Label;
+    private JLabel player2Label;
 
     public GameWorld(Launcher lf) {
         this.lf = lf;
@@ -50,12 +57,16 @@ public class GameWorld extends JPanel implements Runnable {
         try {
             while (true) {
                 this.tick++;
-                if (this.tick++ == 26100) {
-                    System.exit(0);
+                if (this.tick == 26100) {
+                    p1.loseLife();
+                    p2.loseLife();
+                    resetGame();
                 }
                 updateTimer();
                 t1.update();
+                rechargeBar.setValue((int)t1.getDeltaTime());
                 t2.update(); // update tank
+                rechargeBar2.setValue((int)t2.getDeltaTime());
                 this.repaint();   // redraw game
                 this.checkCollision();
                 gameObjs.forEach(obj -> {
@@ -157,7 +168,6 @@ public class GameWorld extends JPanel implements Runnable {
                             // Check if enemy tank intersects with the animation bounding box
                             if (obj2 instanceof Tank && obj2.getHitbox().intersects(explosion.getHitBox())) {
                                 ((Tank) obj2).takeDamage(10);
-                                System.out.println(((Tank) obj2).getHealth());
                             }
                         }
 
@@ -176,14 +186,19 @@ public class GameWorld extends JPanel implements Runnable {
         }
         aniDebounce = false;
 
-        //Remove inactive spells
-        gameObjs.removeIf(obj -> obj instanceof NormalBullet && !((NormalBullet) obj).isActive());
-        gameObjs.removeIf(obj -> obj instanceof MagicBullet && !((MagicBullet) obj).isActive());
-        gameObjs.removeIf(obj -> obj instanceof ZapSpell && !((ZapSpell) obj).isActive());
-        gameObjs.removeIf(obj -> obj instanceof FireBallSpell && !((FireBallSpell) obj).isActive());
+        //Clean up projectiles/destructible (Iterator required for concurrency crash issue)
+        Iterator<GameObject> iterator = gameObjs.iterator();
+        while (iterator.hasNext()) {
+            GameObject obj = iterator.next();
+            if ((obj instanceof NormalBullet && !((NormalBullet) obj).isActive()) ||
+                    (obj instanceof MagicBullet && !((MagicBullet) obj).isActive()) ||
+                    (obj instanceof ZapSpell && !((ZapSpell) obj).isActive()) ||
+                    (obj instanceof FireBallSpell && !((FireBallSpell) obj).isActive()) ||
+                    (obj instanceof BreakableWall && ((BreakableWall) obj).isDestroyed())) {
+                iterator.remove();
+            }
+        }
 
-        //Remove breakable wall if hit
-        gameObjs.removeIf(obj -> obj instanceof BreakableWall && ((BreakableWall) obj).isDestroyed());
     }
 
 
@@ -192,8 +207,34 @@ public class GameWorld extends JPanel implements Runnable {
      */
     public void resetGame() {
         this.tick = 0;
-        t1.setX(300);
-        t1.setY(300);
+        this.time = 26100;
+
+        t1.stopAttack();
+        t2.stopAttack();
+
+        t1.setX(224);
+        t1.setY(718);
+        t1.resetHealth();
+
+        BufferedImage player1Image = ResourceManager.getSprite("wizard1");
+        int width1 = player1Image.getWidth() * p1.getLives() / 3;
+        int height1 = player1Image.getHeight();
+        player1Image = player1Image.getSubimage(0, 0, width1, height1);
+        player1Label.setIcon(new ImageIcon(player1Image));
+        player1Label.repaint();
+
+        t2.setX(1775);
+        t2.setY(718);
+        t2.resetHealth();
+
+        BufferedImage player2Image = ResourceManager.getSprite("wizard2");
+        int width2 = player2Image.getWidth() * p2.getLives() / 3;
+        int height2 = player2Image.getHeight();
+        player2Image = player2Image.getSubimage(0, 0, width2, height2);
+        player2Label.setIcon(new ImageIcon(player2Image));
+        player2Label.repaint();
+
+        InitializeGame();
     }
 
     /**
@@ -201,21 +242,36 @@ public class GameWorld extends JPanel implements Runnable {
      * initial state as well.
      */
     public void InitializeGame() {
+        gameObjs = new ArrayList<>();
+        animations = new ArrayList<>();
+
         this.world = new BufferedImage(GameConstants.GAME_WORLD_WIDTH,
                 GameConstants.GAME_WORLD_HEIGHT,
                 BufferedImage.TYPE_INT_RGB);
 
-        BufferedImage t1img = ResourceManager.getSprite("tank1");
+        BufferedImage t1img = ResourceManager.getSprite("wizard1");
         t1 = new Tank(224, 718, 0, 0, (short) 0, t1img);
-        TankControl tc1 = new TankControl(t1, KeyEvent.VK_W, KeyEvent.VK_S, KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_F);
+        TankControl tc1 = new TankControl(t1, KeyEvent.VK_W, KeyEvent.VK_S, KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_F, KeyEvent.VK_Q, KeyEvent.VK_E);
         this.lf.getJf().addKeyListener(tc1);
         gameObjs.add(t1);
 
-        BufferedImage t2img = ResourceManager.getSprite("tank2");
+        if (p1 == null) {
+            p1 = new Player(3, 0, t1, this);
+        } else {
+            p1 = new Player(p1.getLives(), p1.getCurrentSpell(), t1, this);
+        }
+
+        BufferedImage t2img = ResourceManager.getSprite("wizard2");
         t2 = new Tank(1775, 718, 0, 0, (short) 0, t2img);
-        TankControl tc2 = new TankControl(t2, KeyEvent.VK_U, KeyEvent.VK_J, KeyEvent.VK_H, KeyEvent.VK_K, KeyEvent.VK_L);
+        TankControl tc2 = new TankControl(t2, KeyEvent.VK_U, KeyEvent.VK_J, KeyEvent.VK_H, KeyEvent.VK_K, KeyEvent.VK_L, KeyEvent.VK_Y, KeyEvent.VK_I);
         this.lf.getJf().addKeyListener(tc2);
         gameObjs.add(t2);
+
+        if (p2 == null) {
+            p2 = new Player(3, 0, t2, this);
+        } else {
+            p2 = new Player(p2.getLives(), p2.getCurrentSpell(), t2, this);
+        }
 
         //Create the map's walls
         try {
@@ -240,6 +296,17 @@ public class GameWorld extends JPanel implements Runnable {
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+
+        BufferedImage mm = world.getSubimage(0, 0, GameConstants.GAME_WORLD_WIDTH, GameConstants.GAME_WORLD_HEIGHT);
+        if (map == null) {
+            map = new MinimapPanel(mm);
+            map.setBounds((GameConstants.GAME_SCREEN_WIDTH / 2) - 154, (GameConstants.GAME_SCREEN_HEIGHT - 359), 307, 230);
+            map.setLayout(null);
+            map.setBorder(BorderFactory.createLineBorder(Color.black));
+            minimap.add(map);
+        } else {
+            map.setMapImage(mm);
         }
     }
 
@@ -323,13 +390,18 @@ public class GameWorld extends JPanel implements Runnable {
 
         //Create the main window panel
         window.setBackground(Color.gray);
-        window.setPreferredSize(new Dimension(GameConstants.GAME_SCREEN_WIDTH, 100));
+        window.setPreferredSize(new Dimension(GameConstants.GAME_SCREEN_WIDTH, 90));
         window.setLayout(new BorderLayout());
         add(window, BorderLayout.SOUTH);
 
         //Create the health panel
-        JPanel healthPanel = new JPanel();
-        healthPanel.setBackground(Color.gray);
+        JPanel healthPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.drawImage(ResourceManager.getSprite("parchment"), 0, 0, getWidth(), getHeight(), this);
+            }
+        };
         healthPanel.setLayout(null);
         healthPanel.setPreferredSize(new Dimension(GameConstants.GAME_SCREEN_WIDTH, 90));
 
@@ -349,15 +421,19 @@ public class GameWorld extends JPanel implements Runnable {
         healthPanel.add(healthBar2);
 
         //Load and add tank images to the health panel
-        BufferedImage tankImage = ResourceManager.getSprite("tank1");
-        JLabel picLabel = new JLabel(new ImageIcon(tankImage));
-        picLabel.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 8) - 100), 10, 50, 50);
-        healthPanel.add(picLabel);
+        BufferedImage player1Image = ResourceManager.getSprite("wizard1");
+        player1Image = player1Image.getSubimage(0, 0, player1Image.getWidth(), player1Image.getHeight());
 
-        BufferedImage tank2Image = ResourceManager.getSprite("tank2");
-        JLabel pict2Label = new JLabel(new ImageIcon(tank2Image));
-        pict2Label.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 2) + 50), 10, 50, 50);
-        healthPanel.add(pict2Label);
+        player1Label = new JLabel(new ImageIcon(player1Image));
+        player1Label.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 8) - 100), 10, 50, 50);
+        healthPanel.add(player1Label);
+
+        BufferedImage player2Image = ResourceManager.getSprite("wizard2");
+        player2Image = player2Image.getSubimage(0, 0, player2Image.getWidth(), player2Image.getHeight());
+
+        player2Label = new JLabel(new ImageIcon(player2Image));
+        player2Label.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 2) + 50), 10, 50, 50);
+        healthPanel.add(player2Label);
 
         //Add recharge bars to the health panel
         rechargeBar.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 4) - 160), 40, 300, 15);
@@ -375,13 +451,13 @@ public class GameWorld extends JPanel implements Runnable {
         healthPanel.add(rechargeBar2);
 
         //Add spell labels to the health panel
-        t1Spell.setText("<< " + "Current Spell" + " >>");
+        t1Spell.setText("<< " + p1.getSpellName() + " >>");
         t1Spell.setForeground(Color.BLACK);
         t1Spell.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 4) - 160), 60, 300, 20);
         t1Spell.setFont(new Font("Arial", Font.BOLD, 20));
         healthPanel.add(t1Spell);
 
-        t2Spell.setText("<< " + "Current Spell" + " >>");
+        t2Spell.setText("<< " + p2.getSpellName() + " >>");
         t2Spell.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 2) + (GameConstants.GAME_SCREEN_WIDTH / 8)), 60, 300, 20);
         t2Spell.setForeground(Color.BLACK);
         t2Spell.setFont(new Font("Arial", Font.BOLD, 20));
@@ -397,8 +473,13 @@ public class GameWorld extends JPanel implements Runnable {
         add(timerPanel, BorderLayout.CENTER);
 
         //Add panel behind timerLabel
-        JPanel textPanel = new JPanel();
-        textPanel.setBackground(Color.white);
+        JPanel textPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.drawImage(ResourceManager.getSprite("parchment"), 0, 0, getWidth(), getHeight(), this);
+            }
+        };
         textPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         textPanel.setBounds(0, 0, 20, 45);
         timerPanel.add(textPanel);
@@ -421,7 +502,7 @@ public class GameWorld extends JPanel implements Runnable {
         //Panel for minimap
         BufferedImage mm = world.getSubimage(0, 0, GameConstants.GAME_WORLD_WIDTH, GameConstants.GAME_WORLD_HEIGHT);
         MinimapPanel map = new MinimapPanel(mm);
-        map.setBounds((GameConstants.GAME_SCREEN_WIDTH / 2) - 154, (GameConstants.GAME_SCREEN_HEIGHT - 369), 307, 230);
+        map.setBounds((GameConstants.GAME_SCREEN_WIDTH / 2) - 154, (GameConstants.GAME_SCREEN_HEIGHT - 359), 307, 230);
         map.setLayout(null);
         map.setBorder(BorderFactory.createLineBorder(Color.black));
         minimap.add(map);
@@ -438,16 +519,25 @@ public class GameWorld extends JPanel implements Runnable {
         healthBar2.setValue(t2.getHealth());
     }
 
+    public void updateSpellLabel() {
+        t1Spell.setText("<< " + p1.getSpellName() + " >>");
+        t2Spell.setText("<< " + p2.getSpellName() + " >>");
+    }
+
     private void updateTimer() {
         timerLabel.setText(((time / 145) / 60) + ":" + ((time / 145) % 60));
         time--;
     }
 
     //Need to be static to allow access for tank to add bullet for collision handling
-    public static void createBullet(int id, float x, float y, float angle, BufferedImage img) {
-//        MagicBullet newBullet = new MagicBullet(id, x, y, angle, img);
-//        ZapSpell newBullet = new ZapSpell(id, x, y, angle, img);
-        FireBallSpell newBullet = new FireBallSpell(id, x, y, angle, img);
-        gameObjs.add(newBullet);
+    public static void createBullet(String type, int id, float x, float y, float angle, BufferedImage img) {
+        Spell newSpell;
+        newSpell = switch (type) {
+            case "magic bullet" -> new MagicBullet(id, x, y, angle, img);
+            case "lightning ball" -> new ZapSpell(id, x, y, angle, img);
+            case "fire ball" -> new FireBallSpell(id, x, y, angle, img);
+            default -> throw new IllegalArgumentException("Invalid spell type!");
+        };
+        gameObjs.add((GameObject) newSpell);
     }
 }

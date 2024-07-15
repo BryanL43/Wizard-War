@@ -15,7 +15,7 @@ public class MagicBullet extends GameObject implements Spell {
     private BufferedImage img;
     private boolean active = true;
     private int parentID;
-    private int bounceLeft = 1;
+    private int bounceLeft = 2;
 
     private float R = 4;
 
@@ -118,7 +118,6 @@ public class MagicBullet extends GameObject implements Spell {
                 //Check if the other object is enemy tank
                 if (otherObj instanceof Tank) {
                     ((Tank) otherObj).takeDamage(10);
-                    System.out.println(((Tank) otherObj).getHealth());
                     this.active = false;
                 }
             }

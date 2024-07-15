@@ -79,7 +79,6 @@ public class ZapSpell extends GameObject implements Spell {
             if (otherTank.getID() != parentID) { //Prevent damaging yourself
                 this.active = false;
                 otherTank.takeDamage(10);
-                System.out.println(otherTank.getHealth());
             }
         } else { //Hits any other object like walls
             this.active = false;

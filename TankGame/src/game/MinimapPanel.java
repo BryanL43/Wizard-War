@@ -5,10 +5,14 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class MinimapPanel extends JPanel {
-    private final BufferedImage minimapImage;
+    private BufferedImage minimapImage;
 
     public MinimapPanel(BufferedImage minimapImage) {
         this.minimapImage = minimapImage;
+    }
+
+    public void setMapImage(BufferedImage mapImage) {
+        this.minimapImage = mapImage;
     }
 
     @Override

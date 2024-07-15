@@ -31,8 +31,8 @@ public class ResourceManager {
     }
 
     private static void initSprites() {
-        ResourceManager.sprites.put("tank1", loadSprite("TankGame/resources/tank/tank1.png"));
-        ResourceManager.sprites.put("tank2", loadSprite("TankGame/resources/tank/tank2.png"));
+        ResourceManager.sprites.put("wizard1", loadSprite("TankGame/resources/character/wizard1.png"));
+        ResourceManager.sprites.put("wizard2", loadSprite("TankGame/resources/character/wizard2.png"));
         ResourceManager.sprites.put("floor", loadSprite("TankGame/resources/floor/Background.bmp"));
         ResourceManager.sprites.put("title", loadSprite("TankGame/resources/title.bmp"));
         ResourceManager.sprites.put("solid wall", loadSprite("TankGame/resources/walls/wall1.png"));
@@ -41,6 +41,7 @@ public class ResourceManager {
         ResourceManager.sprites.put("magic bullet", loadSprite("TankGame/resources/bullets/magicBullet.gif"));
         ResourceManager.sprites.put("lightning ball", loadSprite("TankGame/resources/bullets/lightningBall.png"));
         ResourceManager.sprites.put("fire ball", loadSprite("TankGame/resources/bullets/fireBall.png"));
+        ResourceManager.sprites.put("parchment", loadSprite("TankGame/resources/parchment.jpg"));
     }
 
     private static void initAnimations() {
