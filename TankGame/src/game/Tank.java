@@ -356,4 +356,12 @@ public class Tank extends GameObject {
     public long getDeltaTime() {
         return this.deltaTime;
     }
+
+    public void setSpeed(float newSpeed) {
+        this.R = newSpeed;
+    }
+
+    public void resetSpells() {
+        this.playerHandler.resetSpells();
+    }
 }

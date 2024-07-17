@@ -19,6 +19,8 @@ public class TankControl implements KeyListener {
     private final int meditate;
 
     private boolean canSwitchSpell = true;
+    private boolean isMeditating = false;
+    private long meditateStartTime;
 
     public TankControl(Tank t1, int up, int down, int left, int right, int shoot, int prevSpell, int nextSpell, int meditate) {
         this.t1 = t1;
@@ -52,7 +54,7 @@ public class TankControl implements KeyListener {
         if (keyPressed == right) {
             this.t1.toggleRightPressed();
         }
-        if (keyPressed == shoot) {
+        if (keyPressed == shoot && !isMeditating) {
             canSwitchSpell = false;
             this.t1.toggleShootPressed();
         }
@@ -82,6 +84,42 @@ public class TankControl implements KeyListener {
         }
         if (keyReleased == nextSpell && canSwitchSpell) {
             this.t1.changeNextSpell();
+        }
+        if (keyReleased == meditate) {
+            if (!isMeditating) {
+                isMeditating = true;
+                this.meditateStartTime = System.currentTimeMillis();
+                t1.setSpeed(0);
+
+                new Thread((new Runnable() {
+                    boolean isMeditating;
+
+                    @Override
+                    public void run() {
+                        boolean chargeTimeDone = false;
+                        while (!chargeTimeDone && isMeditating) {
+                            if (System.currentTimeMillis() - meditateStartTime > 3000) {
+                                chargeTimeDone = true;
+                            }
+                        }
+                        System.out.println("Broke out of thread");
+                        if (chargeTimeDone) {
+                            t1.resetSpells();
+                            isMeditating = false;
+                            t1.setSpeed(2);
+                        }
+                    }
+
+                    public Runnable pass(boolean isMeditating) {
+                        this.isMeditating = isMeditating;
+                        return this;
+                    }
+                }).pass(isMeditating)).start();
+            } else {
+                isMeditating = false;
+                System.out.println("no longer meditating");
+                t1.setSpeed(2);
+            }
         }
     }
 }

@@ -10,9 +10,7 @@ public class Player implements PlayerHandler {
     private int currentSpell;
     private final Tank playerCharacter;
     private GameWorld game;
-    private int chargeTime = 0;
 
-//    private final List<String> spellCarousel = new ArrayList<>();
     //List index for spell rotation and pair for the amount of usage for a specific spell
     private final List<Pair<String, Integer>> spellCarousel = new ArrayList<>();
 
@@ -82,5 +80,13 @@ public class Player implements PlayerHandler {
     @Override
     public int getMaxSpell() {
         return this.spellCarousel.size();
+    }
+
+    @Override
+    public void resetSpells() {
+        spellCarousel.get(0).setR(5);
+        spellCarousel.get(1).setR(2);
+        spellCarousel.get(2).setR(3);
+        game.updateSpellLabel();
     }
 }

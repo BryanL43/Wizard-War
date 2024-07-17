@@ -9,4 +9,5 @@ public interface PlayerHandler {
     String getSpellName();
     void subtractSpellUsage();
     int getMaxSpell();
+    void resetSpells();
 }
