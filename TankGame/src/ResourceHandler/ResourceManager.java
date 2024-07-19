@@ -41,6 +41,7 @@ public class ResourceManager {
         ResourceManager.sprites.put("magic bullet", loadSprite("TankGame/resources/bullets/magicBullet.gif"));
         ResourceManager.sprites.put("lightning ball", loadSprite("TankGame/resources/bullets/lightningBall.png"));
         ResourceManager.sprites.put("fire ball", loadSprite("TankGame/resources/bullets/fireBall.png"));
+        ResourceManager.sprites.put("wind blade", loadSprite("TankGame/resources/bullets/windBlade.png"));
         ResourceManager.sprites.put("parchment", loadSprite("TankGame/resources/parchment.jpg"));
     }
 

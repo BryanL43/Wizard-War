@@ -79,6 +79,9 @@ public class GameWorld extends JPanel implements Runnable {
                     if (obj instanceof FireBallSpell) {
                         ((FireBallSpell) obj).update();
                     }
+                    if (obj instanceof WindBladeSpell) {
+                        ((WindBladeSpell) obj).update();
+                    }
                 });
 
                 /*
@@ -174,6 +177,16 @@ public class GameWorld extends JPanel implements Runnable {
                     }
                 }
 
+                //Wind blade pass through spells and walls
+                if (obj1 instanceof WindBladeSpell) {
+                    if (obj1.getHitbox().intersects(obj2.getHitbox())) {
+                        obj1.collides(obj2);
+                    }
+                    if (!(obj2 instanceof Spell) && obj2 instanceof BreakableWall && obj2.getHitbox().intersects(obj1.getHitbox())) {
+                        obj2.collides(obj1);
+                    }
+                }
+
                 //Tank collided with wall
                 if (obj1 instanceof Tank && obj1.getHitbox().intersects(obj2.getHitbox())) {
                     obj1.collides(obj2);
@@ -191,6 +204,7 @@ public class GameWorld extends JPanel implements Runnable {
                     (obj instanceof MagicBullet && !((MagicBullet) obj).isActive()) ||
                     (obj instanceof ZapSpell && !((ZapSpell) obj).isActive()) ||
                     (obj instanceof FireBallSpell && !((FireBallSpell) obj).isActive()) ||
+                    (obj instanceof WindBladeSpell && !((WindBladeSpell) obj).isActive()) ||
                     (obj instanceof BreakableWall && ((BreakableWall) obj).isDestroyed())) {
                 iterator.remove();
             }
@@ -543,6 +557,7 @@ public class GameWorld extends JPanel implements Runnable {
             case "magic bullet" -> new MagicBullet(id, x, y, angle, img);
             case "lightning ball" -> new ZapSpell(id, x, y, angle, img);
             case "fire ball" -> new FireBallSpell(id, x, y, angle, img);
+            case "wind blade" -> new WindBladeSpell(id, x, y, angle, img);
             default -> throw new IllegalArgumentException("Invalid spell type!");
         };
         gameObjs.add((GameObject) newSpell);

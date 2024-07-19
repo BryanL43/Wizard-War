@@ -18,6 +18,7 @@ public class Player implements PlayerHandler {
         spellCarousel.add(new Pair<>("magic bullet", 5)); //index 0
         spellCarousel.add(new Pair<>("lightning ball", 2)); //index 1
         spellCarousel.add(new Pair<>("fire ball", 3)); //index 2
+        spellCarousel.add(new Pair<>("wind blade", 4)); // index 3
 
         this.lives = lives;
         this.currentSpell = spellIndex;
@@ -87,6 +88,7 @@ public class Player implements PlayerHandler {
         spellCarousel.get(0).setR(5);
         spellCarousel.get(1).setR(2);
         spellCarousel.get(2).setR(3);
+        spellCarousel.get(3).setR(4);
         game.updateSpellLabel();
     }
 }
