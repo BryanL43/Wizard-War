@@ -1,5 +1,9 @@
 package TankGame.src.game;
 
+import TankGame.src.ResourceHandler.ResourceManager;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -21,6 +25,9 @@ public class TankControl implements KeyListener {
     private boolean canSwitchSpell = true;
     private boolean isMeditating = false;
     private long meditateStartTime;
+    private Timer meditationTimer;
+
+    private Animation rechargeCircle;
 
     public TankControl(Tank t1, int up, int down, int left, int right, int shoot, int prevSpell, int nextSpell, int meditate) {
         this.t1 = t1;
@@ -32,6 +39,17 @@ public class TankControl implements KeyListener {
         this.prevSpell = prevSpell;
         this.nextSpell = nextSpell;
         this.meditate = meditate;
+
+        // Meditate to recharge spell handler
+        meditationTimer = new Timer(3000, e -> {
+            if (isMeditating) {
+                t1.resetSpells();
+                isMeditating = false;
+                t1.setSpeed(2);
+                rechargeCircle.stopAnimation();
+            }
+        });
+        meditationTimer.setRepeats(false);
     }
 
     @Override
@@ -85,40 +103,20 @@ public class TankControl implements KeyListener {
         if (keyReleased == nextSpell && canSwitchSpell) {
             this.t1.changeNextSpell();
         }
-        if (keyReleased == meditate) {
+        if (keyReleased == meditate && !t1.isShootingHappening()) {
             if (!isMeditating) {
                 isMeditating = true;
                 this.meditateStartTime = System.currentTimeMillis();
                 t1.setSpeed(0);
-
-                new Thread((new Runnable() {
-                    boolean isMeditating;
-
-                    @Override
-                    public void run() {
-                        boolean chargeTimeDone = false;
-                        while (!chargeTimeDone && isMeditating) {
-                            if (System.currentTimeMillis() - meditateStartTime > 3000) {
-                                chargeTimeDone = true;
-                            }
-                        }
-                        System.out.println("Broke out of thread");
-                        if (chargeTimeDone) {
-                            t1.resetSpells();
-                            isMeditating = false;
-                            t1.setSpeed(2);
-                        }
-                    }
-
-                    public Runnable pass(boolean isMeditating) {
-                        this.isMeditating = isMeditating;
-                        return this;
-                    }
-                }).pass(isMeditating)).start();
+                meditationTimer.start();
+                ImageIcon rechargeMagicCircle = ResourceManager.getAnimation("recharge circle");
+                rechargeCircle = new Animation(rechargeMagicCircle, (int) t1.getX() - ((int) t1.getHitbox().getWidth() / 2), (int) t1.getY() - ((int) t1.getHitbox().getHeight() / 2), 3000);
+                GameWorld.createAnimation(rechargeCircle);
             } else {
                 isMeditating = false;
-                System.out.println("no longer meditating");
+                meditationTimer.stop();
                 t1.setSpeed(2);
+                rechargeCircle.stopAnimation();
             }
         }
     }

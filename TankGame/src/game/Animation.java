@@ -34,4 +34,14 @@ public class Animation {
     public Rectangle getHitBox() {
         return new Rectangle(x, y, animatedIcon.getIconWidth() * 2, animatedIcon.getIconHeight() * 2);
     }
+
+    public void setPosition(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public void stopAnimation() {
+        this.finished = true;
+        this.timer.stop();
+    }
 }

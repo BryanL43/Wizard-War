@@ -3,6 +3,7 @@ package TankGame.src.game;
 import TankGame.src.GameConstants;
 import TankGame.src.ResourceHandler.ResourceManager;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -44,6 +45,8 @@ public class Tank extends GameObject {
     private PlayerHandler playerHandler;
     private boolean stopAttack = false;
 
+    private Animation castingCircle;
+
     Tank(float x, float y, float vx, float vy, float angle, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
         this.x = x;
@@ -60,7 +63,7 @@ public class Tank extends GameObject {
     }
 
     void setY(float y) {
-        this. y = y;
+        this.y = y;
     }
 
     float getX() {
@@ -93,6 +96,9 @@ public class Tank extends GameObject {
             this.shootStartTime = System.currentTimeMillis();
             this.isShootInProgress = true;
             this.R = 1.2f;
+            ImageIcon castingMagicCircle = ResourceManager.getAnimation("magic circle");
+            castingCircle = new Animation(castingMagicCircle, (int) this.x - (img.getWidth() / 2), (int) this.y - (img.getHeight() / 2), 1300);
+            GameWorld.createAnimation(castingCircle);
         }
     }
 
@@ -180,6 +186,7 @@ public class Tank extends GameObject {
 
             this.isShootInProgress = false;
             this.shootStartTime = 0;
+            castingCircle.stopAnimation();
 
             // Cancel any ongoing timer task if shoot is released early
             if (shootTimer != null) {
@@ -243,6 +250,7 @@ public class Tank extends GameObject {
         x -= vx;
         y -= vy;
         checkBorder();
+        updateCastingCircle();
     }
 
     private void moveForwards() {
@@ -251,8 +259,14 @@ public class Tank extends GameObject {
         x += vx;
         y += vy;
         checkBorder();
+        updateCastingCircle();
     }
 
+    private void updateCastingCircle() {
+        if (castingCircle != null) {
+            castingCircle.setPosition((int) this.x - (this.img.getWidth() / 2), (int) this.y - (this.img.getHeight() / 2));
+        }
+    }
 
     private void checkBorder() {
         if (x < 32) {
@@ -363,5 +377,10 @@ public class Tank extends GameObject {
 
     public void resetSpells() {
         this.playerHandler.resetSpells();
+    }
+
+    // Ensure that meditate cannot be triggered when firing magic bullets
+    public boolean isShootingHappening() {
+        return isShooting;
     }
 }

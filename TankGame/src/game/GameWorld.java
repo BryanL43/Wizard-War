@@ -11,10 +11,8 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Iterator;
 
 /**
  * @author anthony-pc
@@ -29,7 +27,7 @@ public class GameWorld extends JPanel implements Runnable {
     private final Launcher lf;
     private long tick = 0;
     private static List<GameObject> gameObjs = new ArrayList<>(1000); //static to allow access by tank to add
-    private List<Animation> animations = new ArrayList<>(1000);
+    private static List<Animation> animations = new ArrayList<>(1000);
     private boolean aniDebounce = false;
 
     private JLabel t1Spell = new JLabel();
@@ -255,6 +253,7 @@ public class GameWorld extends JPanel implements Runnable {
         }
 
         InitializeGame();
+        updateSpellLabel();
     }
 
     /**
@@ -368,10 +367,7 @@ public class GameWorld extends JPanel implements Runnable {
 
         drawFloor(buffer);
 
-        List<GameObject> gameObjsCopy = new ArrayList<>(gameObjs); //Prevents ConcurrentModificationException
-        gameObjsCopy.forEach(obj -> obj.drawImage(buffer));
-
-        //Reverse iteration to prevent skipping
+        // Reverse iteration to prevent skipping
         for (int i = animations.size() - 1; i >= 0; i--) {
             if (animations.get(i).isFinished()) {
                 animations.remove(i);
@@ -379,6 +375,9 @@ public class GameWorld extends JPanel implements Runnable {
                 animations.get(i).drawImage(buffer);
             }
         }
+
+        List<GameObject> gameObjsCopy = new ArrayList<>(gameObjs); //Prevents ConcurrentModificationException
+        gameObjsCopy.forEach(obj -> obj.drawImage(buffer));
 
         int screenX1 = calculateScreenX((int) t1.getX());
         int screenX2 = calculateScreenX((int) t2.getX());
@@ -552,8 +551,7 @@ public class GameWorld extends JPanel implements Runnable {
 
     //Need to be static to allow access for tank to add bullet for collision handling
     public static void createBullet(String type, int id, float x, float y, float angle, BufferedImage img) {
-        Spell newSpell;
-        newSpell = switch (type) {
+        Spell newSpell = switch (type) {
             case "magic bullet" -> new MagicBullet(id, x, y, angle, img);
             case "lightning ball" -> new ZapSpell(id, x, y, angle, img);
             case "fire ball" -> new FireBallSpell(id, x, y, angle, img);
@@ -561,5 +559,10 @@ public class GameWorld extends JPanel implements Runnable {
             default -> throw new IllegalArgumentException("Invalid spell type!");
         };
         gameObjs.add((GameObject) newSpell);
+    }
+
+    //Allow access for other objects to create animation
+    public static void createAnimation(Animation ani) {
+        animations.add(ani);
     }
 }

@@ -49,6 +49,8 @@ public class ResourceManager {
         ResourceManager.animations.put("explosion", loadAnimation("TankGame/resources/effects/explosion.gif"));
         ResourceManager.animations.put("zap", loadAnimation("TankGame/resources/effects/zapEffect.gif"));
         ResourceManager.animations.put("large explosion", loadAnimation("TankGame/resources/effects/largeExplosion.gif"));
+        ResourceManager.animations.put("magic circle", loadAnimation("TankGame/resources/effects/magicCircle.gif"));
+        ResourceManager.animations.put("recharge circle", loadAnimation("TankGame/resources/effects/rechargeCircle.gif"));
     }
 
     public static void loadResources() {
