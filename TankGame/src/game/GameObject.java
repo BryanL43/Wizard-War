@@ -21,6 +21,22 @@ public abstract class GameObject {
                 BufferedImage breakableWall = ResourceManager.getSprite("breakable wall");
                 yield new BreakableWall(x, y, breakableWall);
             }
+            case "1" -> {
+                BufferedImage healthPotion = ResourceManager.getSprite("health potion");
+                yield new HealthPotion(x, y, healthPotion);
+            }
+            case "3" -> {
+                BufferedImage shieldPotion = ResourceManager.getSprite("shield potion");
+                yield new ShieldPotion(x, y, shieldPotion);
+            }
+            case "4" -> {
+                BufferedImage bandage = ResourceManager.getSprite("bandage");
+                yield new Bandage(x, y, bandage);
+            }
+            case "5" -> {
+                BufferedImage castingPotion = ResourceManager.getSprite("casting potion");
+                yield new CastingPotion(x, y, castingPotion);
+            }
             default -> throw new IllegalArgumentException("Unexpected type: " + type);
         };
     }

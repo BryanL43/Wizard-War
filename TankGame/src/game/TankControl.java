@@ -3,7 +3,6 @@ package TankGame.src.game;
 import TankGame.src.ResourceHandler.ResourceManager;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 

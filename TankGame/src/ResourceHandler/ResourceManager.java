@@ -43,6 +43,10 @@ public class ResourceManager {
         ResourceManager.sprites.put("fire ball", loadSprite("TankGame/resources/bullets/fireBall.png"));
         ResourceManager.sprites.put("wind blade", loadSprite("TankGame/resources/bullets/windBlade.png"));
         ResourceManager.sprites.put("parchment", loadSprite("TankGame/resources/parchment.jpg"));
+        ResourceManager.sprites.put("health potion", loadSprite("TankGame/resources/powerups/healthPotion.png"));
+        ResourceManager.sprites.put("shield potion", loadSprite("TankGame/resources/powerups/shieldPotion.png"));
+        ResourceManager.sprites.put("bandage", loadSprite("TankGame/resources/powerups/bandage.png"));
+        ResourceManager.sprites.put("casting potion", loadSprite("TankGame/resources/powerups/castingPotion.png"));
     }
 
     private static void initAnimations() {

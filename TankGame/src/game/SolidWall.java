@@ -4,11 +4,11 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class SolidWall extends GameObject implements Walls {
-    private final float x,y;
+    private final int x,y;
     private final BufferedImage img;
 
-    public SolidWall(float x, float y, BufferedImage img) {
-        super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
+    public SolidWall(int x, int y, BufferedImage img) {
+        super(new Rectangle(x, y, img.getWidth(), img.getHeight()));
         this.x = x;
         this.y = y;
         this.img = img;
@@ -16,12 +16,12 @@ public class SolidWall extends GameObject implements Walls {
 
     @Override
     public int getX() {
-        return (int)x;
+        return x;
     }
 
     @Override
     public int getY() {
-        return (int)y;
+        return y;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class SolidWall extends GameObject implements Walls {
     }
 
     public void drawImage(Graphics buffer) {
-        buffer.drawImage(this.img, getX(), getY(), null);
+        buffer.drawImage(this.img, this.x, this.y, null);
     }
 
     @Override

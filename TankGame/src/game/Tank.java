@@ -1,14 +1,17 @@
 package TankGame.src.game;
 
 import TankGame.src.GameConstants;
+import TankGame.src.ResourceHandler.Pair;
 import TankGame.src.ResourceHandler.ResourceManager;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.List;
 
 /**
  *
@@ -40,12 +43,18 @@ public class Tank extends GameObject {
     private Timer shootTimer;
 
     private int health = 100;
+    private int shield = 0;
+    private int castTime = 1300;
     private int id;
 
     private PlayerHandler playerHandler;
     private boolean stopAttack = false;
 
     private Animation castingCircle;
+
+    private final List<Pair<String, Long>> powerups = new ArrayList<>();
+
+    long lastAppliedTime = 0;
 
     Tank(float x, float y, float vx, float vy, float angle, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
@@ -97,7 +106,7 @@ public class Tank extends GameObject {
             this.isShootInProgress = true;
             this.R = 1.2f;
             ImageIcon castingMagicCircle = ResourceManager.getAnimation("magic circle");
-            castingCircle = new Animation(castingMagicCircle, (int) this.x - (img.getWidth() / 2), (int) this.y - (img.getHeight() / 2), 1300);
+            castingCircle = new Animation(castingMagicCircle, (int) this.x - (img.getWidth() / 2), (int) this.y - (img.getHeight() / 2), castTime);
             GameWorld.createAnimation(castingCircle);
         }
     }
@@ -123,7 +132,7 @@ public class Tank extends GameObject {
             this.ShootPressed = false;
             long elapsedTime = System.currentTimeMillis() - shootStartTime;
 
-            if (elapsedTime >= 1300) {
+            if (elapsedTime >= castTime) {
                 String currentSpell = playerHandler.getSpellName();
                 BufferedImage bulletImg = ResourceManager.getSprite(currentSpell);
 
@@ -234,6 +243,35 @@ public class Tank extends GameObject {
         }
 
         hitbox.setLocation((int) x, (int) y);
+
+        //Power up application
+        for (Pair<String, Long> powerup : powerups) {
+            if (powerup.getL().equals("health potion") && powerup.getR() > System.currentTimeMillis()) {
+                long currentTime = System.currentTimeMillis();
+                if (currentTime - lastAppliedTime >= 1000) {
+                    if (health < 100) {
+                        health += 2;
+                        GameWorld.updateHealthUI();
+                    } else {
+                        health = 100;
+                        GameWorld.updateHealthUI();
+                    }
+                    lastAppliedTime = currentTime;
+                }
+            }
+
+            if (powerup.getL().equals("shield potion") && powerup.getR() < System.currentTimeMillis()) {
+                shield = 0;
+                GameWorld.updateHealthUI();
+            }
+
+            if (powerup.getL().equals("casting potion") && powerup.getR() < System.currentTimeMillis()) {
+                castTime = 1300;
+            }
+        }
+
+        //Clear out expired power ups
+        powerups.removeIf(powerup -> powerup.getR() < System.currentTimeMillis());
     }
 
     private void rotateLeft() {
@@ -342,13 +380,36 @@ public class Tank extends GameObject {
     }
 
     public void takeDamage(int amount) {
-        this.health -= amount;
+        if (shield > 0) {
+            if (amount <= shield) {
+                shield -= amount;
+                amount = 0;
+            } else {
+                amount -= shield;
+                shield = 0;
+            }
+        }
+
+        if (amount > 0) {
+            health -= amount;
+        }
+
         playerHandler.onHealthChange(this.health);
-        GameWorld.updateSubUI();
+        GameWorld.updateHealthUI();
     }
 
     public int getHealth() {
         return this.health;
+    }
+
+    public void addHealth(int amount) {
+        if (this.health + amount <= 100) {
+            this.health += amount;
+        } else {
+            this.health = 100;
+        }
+
+        GameWorld.updateHealthUI();
     }
 
     public void resetHealth() {
@@ -382,5 +443,33 @@ public class Tank extends GameObject {
     // Ensure that meditate cannot be triggered when firing magic bullets
     public boolean isShootingHappening() {
         return isShooting;
+    }
+
+    public void addPowerUp(String type, long expireTime) {
+        //Remove repeat power ups. Restricted to 1 stack per unique power up.
+        for (int i = 0; i < powerups.size(); i++) {
+            if (powerups.get(i).getL().equals(type)) {
+                powerups.remove(i);
+            }
+        }
+
+        powerups.add(new Pair<>(type, expireTime));
+    }
+
+    public void setShield(int newShield) {
+        this.shield = newShield;
+        GameWorld.updateHealthUI();
+    }
+
+    public int getShield() {
+        return this.shield;
+    }
+
+    public void setCastTime(int newCastTime) {
+        this.castTime = newCastTime;
+    }
+
+    public int getCastTime() {
+        return this.castTime;
     }
 }

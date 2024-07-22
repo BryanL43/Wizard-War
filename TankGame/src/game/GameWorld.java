@@ -35,6 +35,8 @@ public class GameWorld extends JPanel implements Runnable {
     private JPanel window = new JPanel();
     private static JProgressBar healthBar = new JProgressBar(0, 100);
     private static JProgressBar healthBar2 = new JProgressBar(0, 100);
+    private static JProgressBar shieldBar = new JProgressBar(0, 100);
+    private static JProgressBar shieldBar2 = new JProgressBar(0, 100);
     private static JProgressBar rechargeBar = new JProgressBar(0, 1200);
     private static JProgressBar rechargeBar2 = new JProgressBar(0, 1200);
     private JPanel timerPanel = new JPanel();
@@ -62,9 +64,17 @@ public class GameWorld extends JPanel implements Runnable {
                 }
                 updateTimer();
                 t1.update();
-                rechargeBar.setValue((int)t1.getDeltaTime());
-                t2.update(); // update tank
-                rechargeBar2.setValue((int)t2.getDeltaTime());
+                if (t1.getCastTime() == 1300) {
+                    rechargeBar.setValue((int) t1.getDeltaTime());
+                } else {
+                    rechargeBar.setValue(((int) t1.getDeltaTime() * 5) / 4);
+                }
+                t2.update();
+                if (t2.getCastTime() == 1300) {
+                    rechargeBar2.setValue((int) t2.getDeltaTime());
+                } else {
+                    rechargeBar2.setValue(((int) t2.getDeltaTime() * 5) / 4);
+                }
                 this.repaint();   // redraw game
                 this.checkCollision();
                 gameObjs.forEach(obj -> {
@@ -190,6 +200,11 @@ public class GameWorld extends JPanel implements Runnable {
                     obj1.collides(obj2);
                 }
 
+                // Tank collided with power ups
+                if (obj2 instanceof PowerUps && obj1.getHitbox().intersects(obj2.getHitbox())) {
+                    obj2.collides(obj1);
+                }
+
             }
         }
         aniDebounce = false;
@@ -203,6 +218,7 @@ public class GameWorld extends JPanel implements Runnable {
                     (obj instanceof ZapSpell && !((ZapSpell) obj).isActive()) ||
                     (obj instanceof FireBallSpell && !((FireBallSpell) obj).isActive()) ||
                     (obj instanceof WindBladeSpell && !((WindBladeSpell) obj).isActive()) ||
+                    (obj instanceof PowerUps && !((PowerUps) obj).isActive()) ||
                     (obj instanceof BreakableWall && ((BreakableWall) obj).isDestroyed())) {
                 iterator.remove();
             }
@@ -425,6 +441,21 @@ public class GameWorld extends JPanel implements Runnable {
         healthPanel.setLayout(null);
         healthPanel.setPreferredSize(new Dimension(GameConstants.GAME_SCREEN_WIDTH, 90));
 
+        //Configure and add shield bars to the health panel
+        shieldBar.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 4) - 160), 10, 300, 20);
+        shieldBar.setValue(0);
+        shieldBar.setBackground(new Color(128, 0, 128, 0));
+        shieldBar.setForeground(new Color(128, 0, 128));
+        shieldBar.setBorderPainted(false);
+        healthPanel.add(shieldBar);
+
+        shieldBar2.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 2) + (GameConstants.GAME_SCREEN_WIDTH / 8)), 10, 300, 20);
+        shieldBar2.setValue(0);
+        shieldBar2.setBackground(new Color(128, 0, 128, 0));
+        shieldBar2.setForeground(new Color(128, 0, 128));
+        shieldBar2.setBorderPainted(false);
+        healthPanel.add(shieldBar2);
+
         //Configure and add health bars to the health panel
         healthBar.setBounds(((GameConstants.GAME_SCREEN_WIDTH / 4) - 160), 10, 300, 20);
         healthBar.setValue(100);
@@ -534,9 +565,11 @@ public class GameWorld extends JPanel implements Runnable {
         timerPanel.setVisible(true);
     }
 
-    public static void updateSubUI() {
+    public static void updateHealthUI() {
         healthBar.setValue(t1.getHealth());
         healthBar2.setValue(t2.getHealth());
+        shieldBar.setValue(t1.getShield());
+        shieldBar2.setValue(t2.getShield());
     }
 
     public void updateSpellLabel() {
@@ -545,7 +578,10 @@ public class GameWorld extends JPanel implements Runnable {
     }
 
     private void updateTimer() {
-        timerLabel.setText(((time / 145) / 60) + ":" + ((time / 145) % 60));
+        int minutes = (time / 145) / 60;
+        int seconds = (time / 145) % 60;
+        String timeOfGame = String.format("%02d:%02d", minutes, seconds);
+        timerLabel.setText(timeOfGame);
         time--;
     }
 
