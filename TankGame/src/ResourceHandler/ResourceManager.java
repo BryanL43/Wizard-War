@@ -1,16 +1,22 @@
 package TankGame.src.ResourceHandler;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.sound.sampled.AudioInputStream;
+
 public class ResourceManager {
     private final static Map<String, BufferedImage> sprites = new HashMap<>();
     private final static Map<String, ImageIcon> animations = new HashMap<>();
+    private final static Map<String, AudioInputStream> audios = new HashMap<>();
 
     private static BufferedImage loadSprite(String path) {
         try {
@@ -28,6 +34,10 @@ public class ResourceManager {
                 Objects.requireNonNull(ResourceManager.class.getClassLoader().getResource(path),
                         "Could not get " + path + " animation")
         );
+    }
+
+    private static AudioInputStream loadAudio(String path) throws UnsupportedAudioFileException, IOException {
+        return AudioSystem.getAudioInputStream(new File(path).getAbsoluteFile());
     }
 
     private static void initSprites() {
@@ -57,9 +67,15 @@ public class ResourceManager {
         ResourceManager.animations.put("recharge circle", loadAnimation("TankGame/resources/effects/rechargeCircle.gif"));
     }
 
-    public static void loadResources() {
+    private static void initAudios() throws UnsupportedAudioFileException, IOException {
+        ResourceManager.audios.put("background", loadAudio("TankGame/resources/BackGroundMusic.wav"));
+        ResourceManager.audios.put("explosion", loadAudio("TankGame/resources/soundeffects/Explosion_small.wav"));
+    }
+
+    public static void loadResources() throws UnsupportedAudioFileException, IOException {
         ResourceManager.initSprites();
         ResourceManager.initAnimations();
+        ResourceManager.initAudios();
     }
 
     public static BufferedImage getSprite(String name) {
@@ -74,5 +90,12 @@ public class ResourceManager {
             throw new IllegalArgumentException("Resource " + name + " is not found");
         }
         return ResourceManager.animations.get(name);
+    }
+
+    public static AudioInputStream getAudio(String name) {
+        if (!ResourceManager.audios.containsKey(name)) {
+            throw new IllegalArgumentException("Resource " + name + " is not found");
+        }
+        return ResourceManager.audios.get(name);
     }
 }

@@ -3,6 +3,7 @@ package TankGame.src.game;
 
 import TankGame.src.GameConstants;
 import TankGame.src.Launcher;
+import TankGame.src.ResourceHandler.Audio;
 import TankGame.src.ResourceHandler.ResourceManager;
 
 import javax.swing.*;
@@ -28,6 +29,7 @@ public class GameWorld extends JPanel implements Runnable {
     private long tick = 0;
     private static List<GameObject> gameObjs = new ArrayList<>(1000); //static to allow access by tank to add
     private static List<Animation> animations = new ArrayList<>(1000);
+    private static List<Audio> audios = new ArrayList<>(1000);
     private boolean aniDebounce = false;
 
     private JLabel t1Spell = new JLabel();
@@ -114,7 +116,7 @@ public class GameWorld extends JPanel implements Runnable {
                 GameObject obj2 = gameObjs.get(j);
 
                 //Magic bullet spell bounce effect
-                if (obj1 instanceof MagicBullet) {
+                if (obj1 instanceof MagicBullet && !(obj2 instanceof PowerUps)) {
                     if (obj1.getHitbox().intersects(obj2.getHitbox())) {
                         obj1.collides(obj2);
 
@@ -131,7 +133,7 @@ public class GameWorld extends JPanel implements Runnable {
                 }
 
                 //Zap spell radius effect
-                if (obj1 instanceof ZapSpell) {
+                if (obj1 instanceof ZapSpell && !(obj2 instanceof PowerUps)) {
                     if (obj2 instanceof Tank && ((Tank) obj2).getID() != ((ZapSpell) obj1).getParentID()) { //If other player is near the spell then the spell will trigger AOE damage
                         double distance = Math.sqrt(Math.pow(obj1.getHitbox().getCenterX() - obj2.getHitbox().getCenterX(), 2) +
                                 Math.pow(obj1.getHitbox().getCenterY() - obj2.getHitbox().getCenterY(), 2));
@@ -157,7 +159,7 @@ public class GameWorld extends JPanel implements Runnable {
                 }
 
                 //Fireball explosion effect
-                if (obj1 instanceof FireBallSpell) {
+                if (obj1 instanceof FireBallSpell && !(obj2 instanceof PowerUps)) {
                     if (obj1.getHitbox().intersects(obj2.getHitbox())) {
                         //Prevent animation from playing on collision with your own tank
                         if (obj2 instanceof Tank && ((Tank) obj2).getID() == ((FireBallSpell) obj1).getParentID()) {
@@ -173,6 +175,9 @@ public class GameWorld extends JPanel implements Runnable {
                             Animation explosion = new Animation(largeExplosionEffect, explosionX, explosionY, 750);
                             animations.add(explosion);
 
+                            Audio backgroundMusic = new Audio("explosion", -5.0f);
+                            audios.add(backgroundMusic);
+
                             // Check if enemy tank intersects with the animation bounding box
                             if (obj2 instanceof Tank && obj2.getHitbox().intersects(explosion.getHitBox())) {
                                 ((Tank) obj2).takeDamage(10);
@@ -186,7 +191,7 @@ public class GameWorld extends JPanel implements Runnable {
                 }
 
                 //Wind blade pass through spells and walls
-                if (obj1 instanceof WindBladeSpell) {
+                if (obj1 instanceof WindBladeSpell && !(obj2 instanceof PowerUps)) {
                     if (obj1.getHitbox().intersects(obj2.getHitbox())) {
                         obj1.collides(obj2);
                     }
@@ -239,7 +244,7 @@ public class GameWorld extends JPanel implements Runnable {
 
         t1.setX(224);
         t1.setY(718);
-        t1.resetHealth();
+        t1.reset();
 
         BufferedImage player1Image = ResourceManager.getSprite("wizard1");
         int width1 = player1Image.getWidth() * p1.getLives() / 3;
@@ -250,7 +255,7 @@ public class GameWorld extends JPanel implements Runnable {
 
         t2.setX(1775);
         t2.setY(718);
-        t2.resetHealth();
+        t2.reset();
 
         BufferedImage player2Image = ResourceManager.getSprite("wizard2");
         int width2 = player2Image.getWidth() * p2.getLives() / 3;
@@ -267,6 +272,15 @@ public class GameWorld extends JPanel implements Runnable {
                 iterator.remove();
             }
         }
+
+        //Remove all animations
+        animations.clear();
+
+        //Remove all audio
+        for (Audio audio : audios) {
+            audio.stopAudio();
+        }
+        audios.clear();
 
         InitializeGame();
         updateSpellLabel();
@@ -301,7 +315,7 @@ public class GameWorld extends JPanel implements Runnable {
             TankControl tc2 = new TankControl(t2, KeyEvent.VK_U, KeyEvent.VK_J, KeyEvent.VK_H, KeyEvent.VK_K, KeyEvent.VK_L, KeyEvent.VK_Y, KeyEvent.VK_I, KeyEvent.VK_O);
             this.lf.getJf().addKeyListener(tc2);
             gameObjs.add(t2);
-            }
+        }
 
         if (p2 == null) {
             p2 = new Player(3, 0, t2, this);
@@ -344,6 +358,10 @@ public class GameWorld extends JPanel implements Runnable {
         } else {
             map.setMapImage(mm);
         }
+
+        Audio backgroundMusic = new Audio("background", -30.0f);
+        audios.add(backgroundMusic);
+        backgroundMusic.loopAudio();
     }
 
     private void drawFloor(Graphics2D buffer) {

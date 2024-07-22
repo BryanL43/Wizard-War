@@ -21,22 +21,30 @@ public abstract class GameObject {
                 BufferedImage breakableWall = ResourceManager.getSprite("breakable wall");
                 yield new BreakableWall(x, y, breakableWall);
             }
-            case "1" -> {
-                BufferedImage healthPotion = ResourceManager.getSprite("health potion");
-                yield new HealthPotion(x, y, healthPotion);
+            case "1" -> { //Randomize the power ups
+                int random = (int) (Math.random() * 4) + 1;
+
+                yield switch (random) {
+                    case 1 -> {
+                        BufferedImage healthPotion = ResourceManager.getSprite("health potion");
+                        yield new HealthPotion(x, y, healthPotion);
+                    }
+                    case 2 -> {
+                        BufferedImage shieldPotion = ResourceManager.getSprite("shield potion");
+                        yield new ShieldPotion(x, y, shieldPotion);
+                    }
+                    case 3 -> {
+                        BufferedImage bandage = ResourceManager.getSprite("bandage");
+                        yield new Bandage(x, y, bandage);
+                    }
+                    case 4 -> {
+                        BufferedImage castingPotion = ResourceManager.getSprite("casting potion");
+                        yield new CastingPotion(x, y, castingPotion);
+                    }
+                    default -> throw new IllegalArgumentException("Unexpected random value!");
+                };
             }
-            case "3" -> {
-                BufferedImage shieldPotion = ResourceManager.getSprite("shield potion");
-                yield new ShieldPotion(x, y, shieldPotion);
-            }
-            case "4" -> {
-                BufferedImage bandage = ResourceManager.getSprite("bandage");
-                yield new Bandage(x, y, bandage);
-            }
-            case "5" -> {
-                BufferedImage castingPotion = ResourceManager.getSprite("casting potion");
-                yield new CastingPotion(x, y, castingPotion);
-            }
+
             default -> throw new IllegalArgumentException("Unexpected type: " + type);
         };
     }

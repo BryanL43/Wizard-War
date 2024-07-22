@@ -4,9 +4,12 @@ import TankGame.src.ResourceHandler.ResourceManager;
 import TankGame.src.game.GameWorld;
 import TankGame.src.menus.EndGamePanel;
 import TankGame.src.menus.StartMenuPanel;
+
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 public class Launcher {
 
@@ -97,7 +100,7 @@ public class Launcher {
         this.jf.dispatchEvent(new WindowEvent(this.jf, WindowEvent.WINDOW_CLOSING));
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnsupportedAudioFileException, IOException {
         ResourceManager.loadResources();
         (new Launcher()).initUIComponents();
     }

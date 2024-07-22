@@ -16,7 +16,7 @@ public class WindBladeSpell extends GameObject implements Spell {
     private boolean active = true;
     private int parentID;
 
-    private float R = 3;
+    private float R = 5;
 
     WindBladeSpell(int id, float x, float y, float angle, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));

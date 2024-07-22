@@ -412,8 +412,17 @@ public class Tank extends GameObject {
         GameWorld.updateHealthUI();
     }
 
-    public void resetHealth() {
+    public void reset() {
+        for (int i = 0; i < powerups.size(); i++) {
+            powerups.remove(i);
+        }
         this.health = 100;
+        this.shield = 0;
+        this.R = 2;
+        this.castTime = 1300;
+        playerHandler.resetSpells();
+        this.isShootInProgress = false;
+        this.isShooting = false;
     }
 
     public int getID() {
