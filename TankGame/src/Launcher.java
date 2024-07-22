@@ -82,6 +82,7 @@ public class Launcher {
                 this.jf.setSize(GameConstants.GAME_SCREEN_WIDTH, GameConstants.GAME_SCREEN_HEIGHT);
                 //start a new thread for the game to run. This will ensure our JFrame is responsive and
                 // not stuck executing the game loop.
+                gamePanel.resetGame();
                 (new Thread(this.gamePanel)).start();
             }
             case "end" ->

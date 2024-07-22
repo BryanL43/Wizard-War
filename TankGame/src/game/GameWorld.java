@@ -58,6 +58,11 @@ public class GameWorld extends JPanel implements Runnable {
     public void run() {
         try {
             while (true) {
+                if (p1.getLives() <= 0 || p2.getLives() <= 0) {
+                    lf.setFrame("end");
+                    return;
+                }
+
                 this.tick++;
                 if (this.tick == 26100) {
                     p1.loseLife();
@@ -215,19 +220,13 @@ public class GameWorld extends JPanel implements Runnable {
         aniDebounce = false;
 
         //Clean up projectiles/destructible (Iterator required for concurrency crash issue)
-        Iterator<GameObject> iterator = gameObjs.iterator();
-        while (iterator.hasNext()) {
-            GameObject obj = iterator.next();
-            if ((obj instanceof NormalBullet && !((NormalBullet) obj).isActive()) ||
-                    (obj instanceof MagicBullet && !((MagicBullet) obj).isActive()) ||
-                    (obj instanceof ZapSpell && !((ZapSpell) obj).isActive()) ||
-                    (obj instanceof FireBallSpell && !((FireBallSpell) obj).isActive()) ||
-                    (obj instanceof WindBladeSpell && !((WindBladeSpell) obj).isActive()) ||
-                    (obj instanceof PowerUps && !((PowerUps) obj).isActive()) ||
-                    (obj instanceof BreakableWall && ((BreakableWall) obj).isDestroyed())) {
-                iterator.remove();
-            }
-        }
+        gameObjs.removeIf(obj -> (obj instanceof NormalBullet && !((NormalBullet) obj).isActive()) ||
+                (obj instanceof MagicBullet && !((MagicBullet) obj).isActive()) ||
+                (obj instanceof ZapSpell && !((ZapSpell) obj).isActive()) ||
+                (obj instanceof FireBallSpell && !((FireBallSpell) obj).isActive()) ||
+                (obj instanceof WindBladeSpell && !((WindBladeSpell) obj).isActive()) ||
+                (obj instanceof PowerUps && !((PowerUps) obj).isActive()) ||
+                (obj instanceof BreakableWall && ((BreakableWall) obj).isDestroyed()));
 
     }
 
@@ -236,6 +235,11 @@ public class GameWorld extends JPanel implements Runnable {
      * Reset game to its initial state.
      */
     public void resetGame() {
+        if (p1.getLives() == 0 || p2.getLives() == 0) {
+            p1.setLives(3);
+            p2.setLives(3);
+        }
+
         this.tick = 0;
         this.time = 26100;
 
@@ -253,8 +257,11 @@ public class GameWorld extends JPanel implements Runnable {
         player1Label.setIcon(new ImageIcon(player1Image));
         player1Label.repaint();
 
-        t2.setX(1775);
+        t2.setX(224);
         t2.setY(718);
+
+//        t2.setX(1775);
+//        t2.setY(718);
         t2.reset();
 
         BufferedImage player2Image = ResourceManager.getSprite("wizard2");
@@ -282,46 +289,7 @@ public class GameWorld extends JPanel implements Runnable {
         }
         audios.clear();
 
-        InitializeGame();
-        updateSpellLabel();
-    }
-
-    /**
-     * Load all resources for Tank Wars Game. Set all Game Objects to their
-     * initial state as well.
-     */
-    public void InitializeGame() {
-        this.world = new BufferedImage(GameConstants.GAME_WORLD_WIDTH,
-                GameConstants.GAME_WORLD_HEIGHT,
-                BufferedImage.TYPE_INT_RGB);
-
-        if (t1 == null) {
-            BufferedImage t1img = ResourceManager.getSprite("wizard1");
-            t1 = new Tank(224, 718, 0, 0, (short) 0, t1img);
-            TankControl tc1 = new TankControl(t1, KeyEvent.VK_W, KeyEvent.VK_S, KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_F, KeyEvent.VK_Q, KeyEvent.VK_E, KeyEvent.VK_R);
-            this.lf.getJf().addKeyListener(tc1);
-            gameObjs.add(t1);
-        }
-
-        if (p1 == null) {
-            p1 = new Player(3, 0, t1, this);
-        } else {
-            p1 = new Player(p1.getLives(), p1.getCurrentSpell(), t1, this);
-        }
-
-        if (t2 == null) {
-            BufferedImage t2img = ResourceManager.getSprite("wizard2");
-            t2 = new Tank(1775, 718, 0, 0, (short) 0, t2img);
-            TankControl tc2 = new TankControl(t2, KeyEvent.VK_U, KeyEvent.VK_J, KeyEvent.VK_H, KeyEvent.VK_K, KeyEvent.VK_L, KeyEvent.VK_Y, KeyEvent.VK_I, KeyEvent.VK_O);
-            this.lf.getJf().addKeyListener(tc2);
-            gameObjs.add(t2);
-        }
-
-        if (p2 == null) {
-            p2 = new Player(3, 0, t2, this);
-        } else {
-            p2 = new Player(p2.getLives(), p2.getCurrentSpell(), t2, this);
-        }
+        //InitializeGame();
 
         //Create the map's walls
         try {
@@ -346,6 +314,46 @@ public class GameWorld extends JPanel implements Runnable {
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+
+        updateSpellLabel();
+    }
+
+    /**
+     * Load all resources for Tank Wars Game. Set all Game Objects to their
+     * initial state as well.
+     */
+    public void InitializeGame() {
+        this.world = new BufferedImage(GameConstants.GAME_WORLD_WIDTH,
+                GameConstants.GAME_WORLD_HEIGHT,
+                BufferedImage.TYPE_INT_RGB);
+
+        if (t1 == null) {
+            BufferedImage t1img = ResourceManager.getSprite("wizard1");
+            t1 = new Tank(224, 718, 0, 0, (short) 0, t1img);
+            TankControl tc1 = new TankControl(t1, KeyEvent.VK_W, KeyEvent.VK_S, KeyEvent.VK_A, KeyEvent.VK_D, KeyEvent.VK_F, KeyEvent.VK_Q, KeyEvent.VK_E, KeyEvent.VK_R);
+            this.lf.getJf().addKeyListener(tc1);
+            gameObjs.add(t1);
+        }
+
+        if (p1 == null) {
+            p1 = new Player(1, 3, 0, t1, this);
+        } else {
+            p1 = new Player(1, p1.getLives(), p1.getCurrentSpell(), t1, this);
+        }
+
+        if (t2 == null) {
+            BufferedImage t2img = ResourceManager.getSprite("wizard2");
+            t2 = new Tank(1775, 718, 0, 0, (short) 0, t2img);
+            TankControl tc2 = new TankControl(t2, KeyEvent.VK_U, KeyEvent.VK_J, KeyEvent.VK_H, KeyEvent.VK_K, KeyEvent.VK_L, KeyEvent.VK_Y, KeyEvent.VK_I, KeyEvent.VK_O);
+            this.lf.getJf().addKeyListener(tc2);
+            gameObjs.add(t2);
+        }
+
+        if (p2 == null) {
+            p2 = new Player(2, 3, 0, t2, this);
+        } else {
+            p2 = new Player(2, p2.getLives(), p2.getCurrentSpell(), t2, this);
         }
 
         BufferedImage mm = world.getSubimage(0, 0, GameConstants.GAME_WORLD_WIDTH, GameConstants.GAME_WORLD_HEIGHT);
@@ -618,5 +626,9 @@ public class GameWorld extends JPanel implements Runnable {
     //Allow access for other objects to create animation
     public static void createAnimation(Animation ani) {
         animations.add(ani);
+    }
+
+    public Launcher getLauncher() {
+        return this.lf;
     }
 }

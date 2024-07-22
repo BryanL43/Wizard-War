@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Player implements PlayerHandler {
+    private int playerNumber;
     private int lives;
     private int currentSpell;
     private final Tank playerCharacter;
@@ -14,12 +15,13 @@ public class Player implements PlayerHandler {
     //List index for spell rotation and pair for the amount of usage for a specific spell
     private final List<Pair<String, Integer>> spellCarousel = new ArrayList<>();
 
-    public Player(int lives, int spellIndex, Tank playerCharacter, GameWorld game) {
+    public Player(int playerNumber, int lives, int spellIndex, Tank playerCharacter, GameWorld game) {
         spellCarousel.add(new Pair<>("magic bullet", 5)); //index 0
         spellCarousel.add(new Pair<>("lightning ball", 2)); //index 1
         spellCarousel.add(new Pair<>("fire ball", 3)); //index 2
         spellCarousel.add(new Pair<>("wind blade", 4)); // index 3
 
+        this.playerNumber = playerNumber;
         this.lives = lives;
         this.currentSpell = spellIndex;
         this.playerCharacter = playerCharacter;
@@ -29,13 +31,16 @@ public class Player implements PlayerHandler {
 
     public int getLives() {
         return this.lives;
+    }
 
+    public void setLives(int lives) {
+        this.lives = lives;
     }
 
     public void loseLife() {
         this.lives--;
         if (this.lives <= 0) {
-            System.exit(0);
+
         }
     }
 
@@ -44,9 +49,12 @@ public class Player implements PlayerHandler {
         if (newHealth <= 0) {
             this.lives--;
             if (this.lives <= 0) {
-                System.exit(0);
+                if (playerNumber == 1) {
+                    System.out.println("Player 2 has won the duel!");
+                } else {
+                    System.out.println("Player 1 has won the duel!");
+                }
             }
-            game.resetGame();
         }
     }
 
