@@ -423,6 +423,8 @@ public class Tank extends GameObject {
         playerHandler.resetSpells();
         this.isShootInProgress = false;
         this.isShooting = false;
+
+        GameWorld.updateHealthUI();
     }
 
     public int getID() {

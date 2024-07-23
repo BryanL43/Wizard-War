@@ -1,6 +1,7 @@
 package TankGame.src.game;
 
 import TankGame.src.GameConstants;
+import TankGame.src.ResourceHandler.Audio;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -18,6 +19,8 @@ public class FireBallSpell extends GameObject implements Spell {
 
     private float R = 4;
 
+    private static Audio fireWhoosh;
+
     FireBallSpell(int id, float x, float y, float angle, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
 
@@ -28,6 +31,11 @@ public class FireBallSpell extends GameObject implements Spell {
         this.angle = angle;
         this.img = img;
         this.parentID = id;
+
+        if (fireWhoosh == null) {
+            fireWhoosh = new Audio("fire whoosh", 0f);
+        }
+        fireWhoosh.playAudio();
     }
 
     @Override
@@ -76,6 +84,7 @@ public class FireBallSpell extends GameObject implements Spell {
     @Override
     public void collides(GameObject otherObj) {
         this.active = false;
+        fireWhoosh.stopAudio();
     }
 
     public boolean isActive() {

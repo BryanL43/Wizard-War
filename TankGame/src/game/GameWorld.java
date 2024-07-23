@@ -29,7 +29,6 @@ public class GameWorld extends JPanel implements Runnable {
     private long tick = 0;
     private static List<GameObject> gameObjs = new ArrayList<>(1000); //static to allow access by tank to add
     private static List<Animation> animations = new ArrayList<>(1000);
-    private static List<Audio> audios = new ArrayList<>(1000);
     private boolean aniDebounce = false;
 
     private JLabel t1Spell = new JLabel();
@@ -50,6 +49,13 @@ public class GameWorld extends JPanel implements Runnable {
     private JLabel player1Label;
     private JLabel player2Label;
 
+    private Audio backgroundMusic;
+    private Audio explosionSound;
+    private Audio zapSound;
+    private Audio bandageSound;
+    private Audio healthPotSound;
+    private Audio shieldPotSound;
+
     public GameWorld(Launcher lf) {
         this.lf = lf;
     }
@@ -60,16 +66,11 @@ public class GameWorld extends JPanel implements Runnable {
             while (true) {
                 if (p1.getLives() <= 0 || p2.getLives() <= 0) {
                     lf.setFrame("end");
+                    p1.setLives(3);
+                    p2.setLives(3);
                     return;
                 }
 
-                this.tick++;
-                if (this.tick == 26100) {
-                    p1.loseLife();
-                    p2.loseLife();
-                    resetGame();
-                }
-                updateTimer();
                 t1.update();
                 if (t1.getCastTime() == 1300) {
                     rechargeBar.setValue((int) t1.getDeltaTime());
@@ -98,6 +99,13 @@ public class GameWorld extends JPanel implements Runnable {
                         ((WindBladeSpell) obj).update();
                     }
                 });
+
+                this.tick++;
+                if (this.time <= 0) {
+                    p1.loseLife();
+                    p2.loseLife();
+                }
+                updateTimer();
 
                 /*
                  * Sleep for 1000/144 ms (~6.9ms). This is done to have our
@@ -129,6 +137,11 @@ public class GameWorld extends JPanel implements Runnable {
                             aniDebounce = true;
                             ImageIcon explosionIcon = ResourceManager.getAnimation("explosion");
                             animations.add(new Animation(explosionIcon, obj1.getHitbox().x, obj1.getHitbox().y, 200));
+
+                            if (explosionSound == null) {
+                                explosionSound = new Audio("explosion", 0f);
+                            }
+                            explosionSound.playAudio();
                         }
 
                         if (!(obj2 instanceof Spell)) {
@@ -150,6 +163,11 @@ public class GameWorld extends JPanel implements Runnable {
                                 int zapEffectX = (int) ((ZapSpell) obj1).getX() - (zapEffectIcon.getIconWidth() / 2);
                                 int zapEffectY = (int) ((ZapSpell) obj1).getY() - (zapEffectIcon.getIconHeight() / 2);
                                 animations.add(new Animation(zapEffectIcon, zapEffectX, zapEffectY, 750));
+
+                                if (zapSound == null) {
+                                    zapSound = new Audio("zap impact", 0f);
+                                }
+                                zapSound.playAudio();
                             }
                         }
                     } else { //Impact on wall will do nothing
@@ -180,8 +198,10 @@ public class GameWorld extends JPanel implements Runnable {
                             Animation explosion = new Animation(largeExplosionEffect, explosionX, explosionY, 750);
                             animations.add(explosion);
 
-                            Audio backgroundMusic = new Audio("explosion", -5.0f);
-                            audios.add(backgroundMusic);
+                            if (explosionSound == null) {
+                                explosionSound = new Audio("explosion", 0f);
+                            }
+                            explosionSound.playAudio();
 
                             // Check if enemy tank intersects with the animation bounding box
                             if (obj2 instanceof Tank && obj2.getHitbox().intersects(explosion.getHitBox())) {
@@ -211,8 +231,29 @@ public class GameWorld extends JPanel implements Runnable {
                 }
 
                 // Tank collided with power ups
-                if (obj2 instanceof PowerUps && obj1.getHitbox().intersects(obj2.getHitbox())) {
+                if (obj1 instanceof Tank && obj2 instanceof PowerUps && obj1.getHitbox().intersects(obj2.getHitbox())) {
                     obj2.collides(obj1);
+
+                    if (obj2 instanceof Bandage) {
+                        if (bandageSound == null) {
+                            bandageSound = new Audio("bandage", 0f);
+                        }
+                        bandageSound.playAudio();
+                    }
+
+                    if (obj2 instanceof HealthPotion || obj2 instanceof CastingPotion) {
+                        if (healthPotSound == null) {
+                            healthPotSound = new Audio("health potion", -15f);
+                        }
+                        healthPotSound.playAudio();
+                    }
+
+                    if (obj2 instanceof ShieldPotion) {
+                        if (shieldPotSound == null) {
+                            shieldPotSound = new Audio("shield potion", -15f);
+                        }
+                        shieldPotSound.playAudio();
+                    }
                 }
 
             }
@@ -220,14 +261,12 @@ public class GameWorld extends JPanel implements Runnable {
         aniDebounce = false;
 
         //Clean up projectiles/destructible (Iterator required for concurrency crash issue)
-        gameObjs.removeIf(obj -> (obj instanceof NormalBullet && !((NormalBullet) obj).isActive()) ||
-                (obj instanceof MagicBullet && !((MagicBullet) obj).isActive()) ||
+        gameObjs.removeIf(obj -> (obj instanceof MagicBullet && !((MagicBullet) obj).isActive()) ||
                 (obj instanceof ZapSpell && !((ZapSpell) obj).isActive()) ||
                 (obj instanceof FireBallSpell && !((FireBallSpell) obj).isActive()) ||
                 (obj instanceof WindBladeSpell && !((WindBladeSpell) obj).isActive()) ||
                 (obj instanceof PowerUps && !((PowerUps) obj).isActive()) ||
                 (obj instanceof BreakableWall && ((BreakableWall) obj).isDestroyed()));
-
     }
 
 
@@ -235,11 +274,6 @@ public class GameWorld extends JPanel implements Runnable {
      * Reset game to its initial state.
      */
     public void resetGame() {
-        if (p1.getLives() == 0 || p2.getLives() == 0) {
-            p1.setLives(3);
-            p2.setLives(3);
-        }
-
         this.tick = 0;
         this.time = 26100;
 
@@ -257,11 +291,8 @@ public class GameWorld extends JPanel implements Runnable {
         player1Label.setIcon(new ImageIcon(player1Image));
         player1Label.repaint();
 
-        t2.setX(224);
+        t2.setX(1775);
         t2.setY(718);
-
-//        t2.setX(1775);
-//        t2.setY(718);
         t2.reset();
 
         BufferedImage player2Image = ResourceManager.getSprite("wizard2");
@@ -282,14 +313,6 @@ public class GameWorld extends JPanel implements Runnable {
 
         //Remove all animations
         animations.clear();
-
-        //Remove all audio
-        for (Audio audio : audios) {
-            audio.stopAudio();
-        }
-        audios.clear();
-
-        //InitializeGame();
 
         //Create the map's walls
         try {
@@ -367,19 +390,20 @@ public class GameWorld extends JPanel implements Runnable {
             map.setMapImage(mm);
         }
 
-        Audio backgroundMusic = new Audio("background", -30.0f);
-        audios.add(backgroundMusic);
+        backgroundMusic = new Audio("background", -30.0f);
         backgroundMusic.loopAudio();
     }
 
     private void drawFloor(Graphics2D buffer) {
+        // Load the floor image once and reuse it
         BufferedImage floor = ResourceManager.getSprite("floor");
-        for (int i = 0; i < GameConstants.GAME_WORLD_WIDTH; i += 320) {
-            for (int j = 0; j < GameConstants.GAME_WORLD_HEIGHT; j += 240) {
+        for (int i = 0; i < GameConstants.GAME_WORLD_WIDTH; i += floor.getWidth()) {
+            for (int j = 0; j < GameConstants.GAME_WORLD_HEIGHT; j += floor.getHeight()) {
                 buffer.drawImage(floor, i, j, null);
             }
         }
     }
+
 
     private int calculateScreenX(int x) {
         int screenX = x - (GameConstants.GAME_SCREEN_WIDTH / 4);
@@ -626,9 +650,5 @@ public class GameWorld extends JPanel implements Runnable {
     //Allow access for other objects to create animation
     public static void createAnimation(Animation ani) {
         animations.add(ani);
-    }
-
-    public Launcher getLauncher() {
-        return this.lf;
     }
 }

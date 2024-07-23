@@ -68,8 +68,15 @@ public class ResourceManager {
     }
 
     private static void initAudios() throws UnsupportedAudioFileException, IOException {
-        ResourceManager.audios.put("background", loadAudio("TankGame/resources/BackGroundMusic.wav"));
+        ResourceManager.audios.put("background", loadAudio("TankGame/resources/BackgroundMusic.wav"));
         ResourceManager.audios.put("explosion", loadAudio("TankGame/resources/soundeffects/Explosion_small.wav"));
+        ResourceManager.audios.put("zap impact", loadAudio("TankGame/resources/soundeffects/ZapImpact.wav"));
+        ResourceManager.audios.put("crackle", loadAudio("TankGame/resources/soundeffects/crackleSound.wav"));
+        ResourceManager.audios.put("bandage", loadAudio("TankGame/resources/soundeffects/BandageSoundEffect.wav"));
+        ResourceManager.audios.put("health potion", loadAudio("TankGame/resources/soundeffects/HealthPotionSound.wav"));
+        ResourceManager.audios.put("shield potion", loadAudio("TankGame/resources/soundeffects/ShieldPotionSound.wav"));
+        ResourceManager.audios.put("wind", loadAudio("TankGame/resources/soundeffects/WindSoundEffect.wav"));
+        ResourceManager.audios.put("fire whoosh", loadAudio("TankGame/resources/soundeffects/firewhoosh.wav"));
     }
 
     public static void loadResources() throws UnsupportedAudioFileException, IOException {

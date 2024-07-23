@@ -37,23 +37,19 @@ public class Player implements PlayerHandler {
         this.lives = lives;
     }
 
-    public void loseLife() {
+    public void loseLife() { //Method for when timer runs out
         this.lives--;
-        if (this.lives <= 0) {
-
+        if (this.lives > 0) { //Allow thread loop to execute end screen
+            game.resetGame();
         }
     }
 
     @Override
     public void onHealthChange(int newHealth) {
-        if (newHealth <= 0) {
+        if (newHealth <= 0) { //Allow thread loop to execute end screen
             this.lives--;
-            if (this.lives <= 0) {
-                if (playerNumber == 1) {
-                    System.out.println("Player 2 has won the duel!");
-                } else {
-                    System.out.println("Player 1 has won the duel!");
-                }
+            if (this.lives > 0) {
+                game.resetGame();
             }
         }
     }

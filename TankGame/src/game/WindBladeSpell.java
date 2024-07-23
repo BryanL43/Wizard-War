@@ -1,6 +1,7 @@
 package TankGame.src.game;
 
 import TankGame.src.GameConstants;
+import TankGame.src.ResourceHandler.Audio;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -18,6 +19,8 @@ public class WindBladeSpell extends GameObject implements Spell {
 
     private float R = 5;
 
+    private static Audio windSound;
+
     WindBladeSpell(int id, float x, float y, float angle, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
 
@@ -28,6 +31,11 @@ public class WindBladeSpell extends GameObject implements Spell {
         this.angle = angle;
         this.img = img;
         this.parentID = id;
+
+        if (windSound == null) {
+            windSound = new Audio("wind", 0f);
+        }
+        windSound.playAudio();
     }
 
     @Override
@@ -79,10 +87,12 @@ public class WindBladeSpell extends GameObject implements Spell {
             if (otherTank.getID() != parentID) { //Prevent damaging yourself
                 this.active = false;
                 otherTank.takeDamage(10);
+                windSound.stopAudio();
             }
         }
         if (otherObj instanceof SolidWall) {
             this.active = false;
+            windSound.stopAudio();
         }
     }
 

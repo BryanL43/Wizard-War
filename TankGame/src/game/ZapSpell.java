@@ -1,6 +1,7 @@
 package TankGame.src.game;
 
 import TankGame.src.GameConstants;
+import TankGame.src.ResourceHandler.Audio;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -18,6 +19,8 @@ public class ZapSpell extends GameObject implements Spell {
 
     private float R = 3;
 
+    private static Audio crackleSound;
+
     ZapSpell(int id, float x, float y, float angle, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
 
@@ -28,6 +31,11 @@ public class ZapSpell extends GameObject implements Spell {
         this.angle = angle;
         this.img = img;
         this.parentID = id;
+
+        if (crackleSound == null) {
+            crackleSound = new Audio("crackle", 0f);
+        }
+        crackleSound.loopAudio();
     }
 
     @Override
@@ -79,9 +87,11 @@ public class ZapSpell extends GameObject implements Spell {
             if (otherTank.getID() != parentID) { //Prevent damaging yourself
                 this.active = false;
                 otherTank.takeDamage(10);
+                crackleSound.stopAudio();
             }
         } else { //Hits any other object like walls
             this.active = false;
+            crackleSound.stopAudio();
         }
     }
 
