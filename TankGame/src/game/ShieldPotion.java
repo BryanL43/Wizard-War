@@ -1,5 +1,7 @@
 package TankGame.src.game;
 
+import TankGame.src.ResourceHandler.Audio;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -7,6 +9,7 @@ public class ShieldPotion extends GameObject implements PowerUps {
     private final int x,y;
     private final BufferedImage img;
     private boolean active = true;
+    private Audio shieldPotSound;
 
     public ShieldPotion(int x, int y, BufferedImage img) {
         super(new Rectangle(x, y, img.getWidth(), img.getHeight()));
@@ -26,6 +29,10 @@ public class ShieldPotion extends GameObject implements PowerUps {
             active = false;
             ((Tank) otherObj).setShield(20);
             ((Tank) otherObj).addPowerUp("shield potion", System.currentTimeMillis() + 20000);
+            if (shieldPotSound == null) {
+                shieldPotSound = new Audio("shield potion", -15f);
+            }
+            shieldPotSound.playAudio();
         }
     }
 

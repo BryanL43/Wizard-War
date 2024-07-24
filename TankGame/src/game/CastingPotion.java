@@ -1,5 +1,7 @@
 package TankGame.src.game;
 
+import TankGame.src.ResourceHandler.Audio;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -7,6 +9,7 @@ public class CastingPotion extends GameObject implements PowerUps {
     private final int x,y;
     private final BufferedImage img;
     private boolean active = true;
+    private Audio healthPotSound;
 
     public CastingPotion(int x, int y, BufferedImage img) {
         super(new Rectangle(x, y, img.getWidth(), img.getHeight()));
@@ -26,6 +29,10 @@ public class CastingPotion extends GameObject implements PowerUps {
             active = false;
             ((Tank) otherObj).setCastTime((1300 * 3) / 4);
             ((Tank) otherObj).addPowerUp("casting potion", System.currentTimeMillis() + 10000);
+            if (healthPotSound == null) {
+                healthPotSound = new Audio("health potion", -15f);
+            }
+            healthPotSound.playAudio();
         }
     }
 

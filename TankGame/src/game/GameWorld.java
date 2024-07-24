@@ -52,9 +52,6 @@ public class GameWorld extends JPanel implements Runnable {
     private Audio backgroundMusic;
     private Audio explosionSound;
     private Audio zapSound;
-    private Audio bandageSound;
-    private Audio healthPotSound;
-    private Audio shieldPotSound;
 
     public GameWorld(Launcher lf) {
         this.lf = lf;
@@ -99,6 +96,14 @@ public class GameWorld extends JPanel implements Runnable {
                         ((WindBladeSpell) obj).update();
                     }
                 });
+
+                //Clean up projectiles/destructible (Iterator required for concurrency crash issue)
+                gameObjs.removeIf(obj -> (obj instanceof MagicBullet && !((MagicBullet) obj).isActive()) ||
+                        (obj instanceof ZapSpell && !((ZapSpell) obj).isActive()) ||
+                        (obj instanceof FireBallSpell && !((FireBallSpell) obj).isActive()) ||
+                        (obj instanceof WindBladeSpell && !((WindBladeSpell) obj).isActive()) ||
+                        (obj instanceof PowerUps && !((PowerUps) obj).isActive()) ||
+                        (obj instanceof BreakableWall && ((BreakableWall) obj).isDestroyed()));
 
                 this.tick++;
                 if (this.time <= 0) {
@@ -233,40 +238,11 @@ public class GameWorld extends JPanel implements Runnable {
                 // Tank collided with power ups
                 if (obj1 instanceof Tank && obj2 instanceof PowerUps && obj1.getHitbox().intersects(obj2.getHitbox())) {
                     obj2.collides(obj1);
-
-                    if (obj2 instanceof Bandage) {
-                        if (bandageSound == null) {
-                            bandageSound = new Audio("bandage", 0f);
-                        }
-                        bandageSound.playAudio();
-                    }
-
-                    if (obj2 instanceof HealthPotion || obj2 instanceof CastingPotion) {
-                        if (healthPotSound == null) {
-                            healthPotSound = new Audio("health potion", -15f);
-                        }
-                        healthPotSound.playAudio();
-                    }
-
-                    if (obj2 instanceof ShieldPotion) {
-                        if (shieldPotSound == null) {
-                            shieldPotSound = new Audio("shield potion", -15f);
-                        }
-                        shieldPotSound.playAudio();
-                    }
                 }
 
             }
         }
         aniDebounce = false;
-
-        //Clean up projectiles/destructible (Iterator required for concurrency crash issue)
-        gameObjs.removeIf(obj -> (obj instanceof MagicBullet && !((MagicBullet) obj).isActive()) ||
-                (obj instanceof ZapSpell && !((ZapSpell) obj).isActive()) ||
-                (obj instanceof FireBallSpell && !((FireBallSpell) obj).isActive()) ||
-                (obj instanceof WindBladeSpell && !((WindBladeSpell) obj).isActive()) ||
-                (obj instanceof PowerUps && !((PowerUps) obj).isActive()) ||
-                (obj instanceof BreakableWall && ((BreakableWall) obj).isDestroyed()));
     }
 
 
