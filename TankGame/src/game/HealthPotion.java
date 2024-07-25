@@ -9,7 +9,6 @@ public class HealthPotion extends GameObject implements PowerUps {
     private final int x,y;
     private final BufferedImage img;
     private boolean active = true;
-    private Audio healthPotSound;
 
     public HealthPotion(int x, int y, BufferedImage img) {
         super(new Rectangle(x, y, img.getWidth(), img.getHeight()));
@@ -28,10 +27,6 @@ public class HealthPotion extends GameObject implements PowerUps {
         if (otherObj instanceof Tank) {
             active = false;
             ((Tank) otherObj).addPowerUp("health potion", System.currentTimeMillis() + 15000);
-            if (healthPotSound == null) {
-                healthPotSound = new Audio("health potion", -15f);
-            }
-            healthPotSound.playAudio();
         }
     }
 

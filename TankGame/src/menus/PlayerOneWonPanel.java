@@ -7,20 +7,20 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class WinnerPanel extends JPanel {
+public class PlayerOneWonPanel extends JPanel {
     private final BufferedImage menuBackground;
     private final Launcher lf;
 
-    public WinnerPanel(Launcher lf) {
+    public PlayerOneWonPanel(Launcher lf) {
         this.lf = lf;
-        menuBackground = ResourceManager.getSprite("title");
+        menuBackground = ResourceManager.getSprite("wizard1");
         this.setBackground(Color.BLACK);
         this.setLayout(null);
 
         JButton continueBtn = new JButton("Continue");
         continueBtn.setFont(new Font("Courier New", Font.BOLD, 24));
-        continueBtn.setBounds(150, 400, 250, 50);
-        continueBtn.addActionListener((actionEvent -> this.lf.closeGame()));
+        continueBtn.setBounds(120, 320, 250, 50);
+        continueBtn.addActionListener((actionEvent -> this.lf.setFrame("end")));
 
         this.add(continueBtn);
     }

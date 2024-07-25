@@ -9,7 +9,6 @@ public class Bandage extends GameObject implements PowerUps {
     private final int x,y;
     private final BufferedImage img;
     private boolean active = true;
-    private Audio bandageSound;
 
     public Bandage(int x, int y, BufferedImage img) {
         super(new Rectangle(x, y, img.getWidth(), img.getHeight()));
@@ -28,10 +27,6 @@ public class Bandage extends GameObject implements PowerUps {
         if (otherObj instanceof Tank) {
             active = false;
             ((Tank) otherObj).addHealth(15);
-            if (bandageSound == null) {
-                bandageSound = new Audio("bandage", 0f);
-            }
-            bandageSound.playAudio();
         }
     }
 

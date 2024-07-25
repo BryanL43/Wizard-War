@@ -51,6 +51,9 @@ public class GameWorld extends JPanel implements Runnable {
     private Audio backgroundMusic;
     private final static Audio explosionSound = new Audio("explosion", 0f);
     private final static Audio zapSound = new Audio("zap impact", 0f);
+    private Audio healthPotSound = new Audio("health potion", -15f);
+    private Audio shieldPotSound = new Audio("shield potion", -15f);
+    private Audio bandageSound = new Audio("bandage", 0f);
 
     public GameWorld(Launcher lf) {
         this.lf = lf;
@@ -61,7 +64,12 @@ public class GameWorld extends JPanel implements Runnable {
         try {
             while (true) {
                 if (p1.getLives() <= 0 || p2.getLives() <= 0) {
-                    lf.setFrame("end");
+                    if (p1.getLives() <= 0) {
+                        lf.setFrame("player2 winner");
+                    } else if (p2.getLives() <= 0) {
+                        lf.setFrame("player1 winner");
+                    }
+
                     p1.setLives(3);
                     p2.setLives(3);
                     return;
@@ -106,8 +114,17 @@ public class GameWorld extends JPanel implements Runnable {
 
                 this.tick++;
                 if (this.time <= 0) {
-                    p1.loseLife();
-                    p2.loseLife();
+                    if (p1.getLives() == 1 && p2.getLives() == 1) {
+                        int randomTieDecider = (int) (Math.random() * 2) + 1;
+                        if (randomTieDecider == 1) {
+                            p1.loseLife();
+                        } else if (randomTieDecider == 2) {
+                            p2.loseLife();
+                        }
+                    } else {
+                        p1.loseLife();
+                        p2.loseLife();
+                    }
                 }
                 updateTimer();
 
@@ -169,6 +186,23 @@ public class GameWorld extends JPanel implements Runnable {
 
                 // Tank collided with power ups
                 if (obj1 instanceof Tank && obj2 instanceof PowerUps && obj1.getHitbox().intersects(obj2.getHitbox())) {
+                    // Audio overrides
+                    if (obj2 instanceof HealthPotion || obj2 instanceof CastingPotion) {
+                        shieldPotSound.stopAudio();
+                        bandageSound.stopAudio();
+                        healthPotSound.playAudio();
+                    }
+                    if (obj2 instanceof ShieldPotion) {
+                        healthPotSound.stopAudio();
+                        bandageSound.stopAudio();
+                        shieldPotSound.playAudio();
+                    }
+                    if (obj2 instanceof Bandage) {
+                        healthPotSound.stopAudio();
+                        shieldPotSound.stopAudio();
+                        bandageSound.playAudio();
+                    }
+
                     obj2.collides(obj1);
                 }
 
@@ -198,10 +232,8 @@ public class GameWorld extends JPanel implements Runnable {
         player1Label.setIcon(new ImageIcon(player1Image));
         player1Label.repaint();
 
-        t2.setX(224);
+        t2.setX(1775);
         t2.setY(718);
-//        t2.setX(1775);
-//        t2.setY(718);
         t2.reset();
 
         BufferedImage player2Image = ResourceManager.getSprite("wizard2");
