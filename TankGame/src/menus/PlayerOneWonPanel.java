@@ -13,7 +13,7 @@ public class PlayerOneWonPanel extends JPanel {
 
     public PlayerOneWonPanel(Launcher lf) {
         this.lf = lf;
-        menuBackground = ResourceManager.getSprite("wizard1");
+        menuBackground = ResourceManager.getSprite("winner1");
         this.setBackground(Color.BLACK);
         this.setLayout(null);
 

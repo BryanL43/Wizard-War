@@ -13,7 +13,7 @@ public class PlayerTwoWonPanel extends JPanel {
 
     public PlayerTwoWonPanel(Launcher lf) {
         this.lf = lf;
-        menuBackground = ResourceManager.getSprite("wizard2");
+        menuBackground = ResourceManager.getSprite("winner2");
         this.setBackground(Color.BLACK);
         this.setLayout(null);
 

@@ -57,6 +57,8 @@ public class ResourceManager {
         ResourceManager.sprites.put("shield potion", loadSprite("TankGame/resources/powerups/shieldPotion.png"));
         ResourceManager.sprites.put("bandage", loadSprite("TankGame/resources/powerups/bandage.png"));
         ResourceManager.sprites.put("casting potion", loadSprite("TankGame/resources/powerups/castingPotion.png"));
+        ResourceManager.sprites.put("winner1", loadSprite("TankGame/resources/winner_1.PNG"));
+        ResourceManager.sprites.put("winner2", loadSprite("TankGame/resources/winner_2.PNG"));
     }
 
     private static void initAnimations() {
