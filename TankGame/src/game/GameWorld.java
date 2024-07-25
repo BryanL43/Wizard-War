@@ -29,7 +29,6 @@ public class GameWorld extends JPanel implements Runnable {
     private long tick = 0;
     private static List<GameObject> gameObjs = new ArrayList<>(1000); //static to allow access by tank to add
     private static List<Animation> animations = new ArrayList<>(1000);
-    private boolean aniDebounce = false;
 
     private JLabel t1Spell = new JLabel();
     private JLabel t2Spell = new JLabel();
@@ -50,8 +49,8 @@ public class GameWorld extends JPanel implements Runnable {
     private JLabel player2Label;
 
     private Audio backgroundMusic;
-    private Audio explosionSound;
-    private Audio zapSound;
+    private final static Audio explosionSound = new Audio("explosion", 0f);
+    private final static Audio zapSound = new Audio("zap impact", 0f);
 
     public GameWorld(Launcher lf) {
         this.lf = lf;
@@ -133,25 +132,14 @@ public class GameWorld extends JPanel implements Runnable {
 
                 GameObject obj2 = gameObjs.get(j);
 
-                //Magic bullet spell bounce effect
-                if (obj1 instanceof MagicBullet && !(obj2 instanceof PowerUps)) {
-                    if (obj1.getHitbox().intersects(obj2.getHitbox())) {
-                        obj1.collides(obj2);
+                //Impact spells and not special radius spell types
+                if (!(obj1 instanceof ZapSpell) && obj1 instanceof Spell
+                        && ((Spell) obj1).isActive() && obj1.getHitbox().intersects(obj2.getHitbox())
+                        && !(obj2 instanceof PowerUps)) {
+                    obj1.collides(obj2);
 
-                        if (!aniDebounce && !((MagicBullet) obj1).isActive()) {
-                            aniDebounce = true;
-                            ImageIcon explosionIcon = ResourceManager.getAnimation("explosion");
-                            animations.add(new Animation(explosionIcon, obj1.getHitbox().x, obj1.getHitbox().y, 200));
-
-                            if (explosionSound == null) {
-                                explosionSound = new Audio("explosion", 0f);
-                            }
-                            explosionSound.playAudio();
-                        }
-
-                        if (!(obj2 instanceof Spell)) {
-                            obj2.collides(obj1);
-                        }
+                    if (!(obj2 instanceof Spell)) {
+                        obj2.collides(obj1);
                     }
                 }
 
@@ -162,18 +150,6 @@ public class GameWorld extends JPanel implements Runnable {
                                 Math.pow(obj1.getHitbox().getCenterY() - obj2.getHitbox().getCenterY(), 2));
                         if (distance <= 90) {
                             obj1.collides(obj2);
-                            if (!aniDebounce) {
-                                aniDebounce = true;
-                                ImageIcon zapEffectIcon = ResourceManager.getAnimation("zap");
-                                int zapEffectX = (int) ((ZapSpell) obj1).getX() - (zapEffectIcon.getIconWidth() / 2);
-                                int zapEffectY = (int) ((ZapSpell) obj1).getY() - (zapEffectIcon.getIconHeight() / 2);
-                                animations.add(new Animation(zapEffectIcon, zapEffectX, zapEffectY, 750));
-
-                                if (zapSound == null) {
-                                    zapSound = new Audio("zap impact", 0f);
-                                }
-                                zapSound.playAudio();
-                            }
                         }
                     } else { //Impact on wall will do nothing
                         if (obj1.getHitbox().intersects(obj2.getHitbox())) {
@@ -183,50 +159,6 @@ public class GameWorld extends JPanel implements Runnable {
                                 obj2.collides(obj1);
                             }
                         }
-                    }
-                }
-
-                //Fireball explosion effect
-                if (obj1 instanceof FireBallSpell && !(obj2 instanceof PowerUps)) {
-                    if (obj1.getHitbox().intersects(obj2.getHitbox())) {
-                        //Prevent animation from playing on collision with your own tank
-                        if (obj2 instanceof Tank && ((Tank) obj2).getID() == ((FireBallSpell) obj1).getParentID()) {
-                            continue;
-                        }
-
-                        obj1.collides(obj2);
-                        if (!aniDebounce) {
-                            aniDebounce = true;
-                            ImageIcon largeExplosionEffect = ResourceManager.getAnimation("large explosion");
-                            int explosionX = (int) ((FireBallSpell) obj1).getX();
-                            int explosionY = (int) ((FireBallSpell) obj1).getY() - (largeExplosionEffect.getIconHeight() / 4);
-                            Animation explosion = new Animation(largeExplosionEffect, explosionX, explosionY, 750);
-                            animations.add(explosion);
-
-                            if (explosionSound == null) {
-                                explosionSound = new Audio("explosion", 0f);
-                            }
-                            explosionSound.playAudio();
-
-                            // Check if enemy tank intersects with the animation bounding box
-                            if (obj2 instanceof Tank && obj2.getHitbox().intersects(explosion.getHitBox())) {
-                                ((Tank) obj2).takeDamage(10);
-                            }
-                        }
-
-                        if (!(obj2 instanceof Spell)) {
-                            obj2.collides(obj1);
-                        }
-                    }
-                }
-
-                //Wind blade pass through spells and walls
-                if (obj1 instanceof WindBladeSpell && !(obj2 instanceof PowerUps)) {
-                    if (obj1.getHitbox().intersects(obj2.getHitbox())) {
-                        obj1.collides(obj2);
-                    }
-                    if (!(obj2 instanceof Spell) && obj2 instanceof BreakableWall && obj2.getHitbox().intersects(obj1.getHitbox())) {
-                        obj2.collides(obj1);
                     }
                 }
 
@@ -242,7 +174,6 @@ public class GameWorld extends JPanel implements Runnable {
 
             }
         }
-        aniDebounce = false;
     }
 
 
@@ -279,13 +210,7 @@ public class GameWorld extends JPanel implements Runnable {
         player2Label.repaint();
 
         //Iterator to prevent thread-related issues
-        Iterator<GameObject> iterator = gameObjs.iterator();
-        while (iterator.hasNext()) {
-            GameObject obj = iterator.next();
-            if (!(obj instanceof Tank)) {
-                iterator.remove();
-            }
-        }
+        gameObjs.removeIf(obj -> !(obj instanceof Tank));
 
         //Remove all animations
         animations.clear();
@@ -626,5 +551,14 @@ public class GameWorld extends JPanel implements Runnable {
     //Allow access for other objects to create animation
     public static void createAnimation(Animation ani) {
         animations.add(ani);
+    }
+
+    //Work around audio playing on different thread
+    public static void playAudio(String audio) {
+        switch (audio) {
+            case "explosion" -> explosionSound.playAudio();
+            case "zap" -> zapSound.playAudio();
+            default -> throw new IllegalArgumentException("Invalid audio!");
+        }
     }
 }

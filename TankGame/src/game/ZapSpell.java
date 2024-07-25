@@ -2,7 +2,9 @@ package TankGame.src.game;
 
 import TankGame.src.GameConstants;
 import TankGame.src.ResourceHandler.Audio;
+import TankGame.src.ResourceHandler.ResourceManager;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -51,13 +53,6 @@ public class ZapSpell extends GameObject implements Spell {
         vy = (float)(R * Math.sin(Math.toRadians(angle)));
         x += vx;
         y += vy;
-        checkBorder();
-    }
-
-    private void checkBorder() {
-        if (x < 32 || x >= GameConstants.GAME_WORLD_WIDTH - 32 || y < 32 || y >= GameConstants.GAME_WORLD_HEIGHT - 32) {
-            this.active = false;
-        }
     }
 
     @Override
@@ -88,6 +83,11 @@ public class ZapSpell extends GameObject implements Spell {
                 this.active = false;
                 otherTank.takeDamage(10);
                 crackleSound.stopAudio();
+                ImageIcon zapEffectIcon = ResourceManager.getAnimation("zap");
+                int zapEffectX = (int) this.x - (zapEffectIcon.getIconWidth() / 2);
+                int zapEffectY = (int) this.y - (zapEffectIcon.getIconHeight() / 2);
+                GameWorld.createAnimation(new Animation(zapEffectIcon, zapEffectX, zapEffectY, 750));
+                GameWorld.playAudio("zap");
             }
         } else { //Hits any other object like walls
             this.active = false;
@@ -95,19 +95,12 @@ public class ZapSpell extends GameObject implements Spell {
         }
     }
 
+    @Override
     public boolean isActive() {
         return this.active;
     }
 
     public int getParentID() {
         return this.parentID;
-    }
-
-    public float getX() {
-        return this.x;
-    }
-
-    public float getY() {
-        return this.y;
     }
 }

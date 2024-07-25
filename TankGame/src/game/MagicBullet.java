@@ -1,7 +1,10 @@
 package TankGame.src.game;
 
 import TankGame.src.GameConstants;
+import TankGame.src.ResourceHandler.Audio;
+import TankGame.src.ResourceHandler.ResourceManager;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -51,22 +54,6 @@ public class MagicBullet extends GameObject implements Spell {
         vy = (float)(R * Math.sin(Math.toRadians(angle)));
         x += vx;
         y += vy;
-        checkBorder();
-    }
-
-    private void checkBorder() {
-        if (x < 32 || x >= GameConstants.GAME_WORLD_WIDTH - 32) {
-            vx = -vx;
-            angle = 180 - angle;
-            applyOffset();
-            this.bounceLeft--;
-        }
-        if (y < 32 || y >= GameConstants.GAME_WORLD_HEIGHT - 32) {
-            vy = -vy;
-            angle = -angle;
-            applyOffset();
-            this.bounceLeft--;
-        }
     }
 
     @Override
@@ -122,8 +109,16 @@ public class MagicBullet extends GameObject implements Spell {
                 }
             }
         }
+
+        if (!this.active) {
+            ImageIcon explosionIcon = ResourceManager.getAnimation("explosion");
+            GameWorld.createAnimation(new Animation(explosionIcon, this.getHitbox().x, this.getHitbox().y, 200));
+
+            GameWorld.playAudio("explosion");
+        }
     }
 
+    @Override
     public boolean isActive() {
         return this.active;
     }

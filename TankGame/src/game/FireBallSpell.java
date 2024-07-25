@@ -2,7 +2,9 @@ package TankGame.src.game;
 
 import TankGame.src.GameConstants;
 import TankGame.src.ResourceHandler.Audio;
+import TankGame.src.ResourceHandler.ResourceManager;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -51,13 +53,6 @@ public class FireBallSpell extends GameObject implements Spell {
         vy = (float)(R * Math.sin(Math.toRadians(angle)));
         x += vx;
         y += vy;
-        checkBorder();
-    }
-
-    private void checkBorder() {
-        if (x < 32 || x >= GameConstants.GAME_WORLD_WIDTH - 32 || y < 32 || y >= GameConstants.GAME_WORLD_HEIGHT - 32) {
-            this.active = false;
-        }
     }
 
     @Override
@@ -83,23 +78,25 @@ public class FireBallSpell extends GameObject implements Spell {
 
     @Override
     public void collides(GameObject otherObj) {
-        this.active = false;
-        fireWhoosh.stopAudio();
+        if (!(otherObj instanceof Tank) || ((Tank) otherObj).getID() != this.parentID) {
+            this.active = false;
+            fireWhoosh.stopAudio();
+            ImageIcon largeExplosionEffect = ResourceManager.getAnimation("large explosion");
+            int explosionX = (int) this.x;
+            int explosionY = (int) this.y - (largeExplosionEffect.getIconHeight() / 4);
+            Animation explosion = new Animation(largeExplosionEffect, explosionX, explosionY, 750);
+            GameWorld.createAnimation(explosion);
+            GameWorld.playAudio("explosion");
+
+            // Check if enemy tank intersects with the animation bounding box
+            if (otherObj instanceof Tank && otherObj.getHitbox().intersects(explosion.getHitBox())) {
+                ((Tank) otherObj).takeDamage(10);
+            }
+        }
     }
 
+    @Override
     public boolean isActive() {
         return this.active;
-    }
-
-    public int getParentID() {
-        return this.parentID;
-    }
-
-    public float getX() {
-        return this.x;
-    }
-
-    public float getY() {
-        return this.y;
     }
 }

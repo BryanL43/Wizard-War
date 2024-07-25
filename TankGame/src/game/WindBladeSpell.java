@@ -51,13 +51,6 @@ public class WindBladeSpell extends GameObject implements Spell {
         vy = (float)(R * Math.sin(Math.toRadians(angle)));
         x += vx;
         y += vy;
-        checkBorder();
-    }
-
-    private void checkBorder() {
-        if (x < 32 || x >= GameConstants.GAME_WORLD_WIDTH - 32 || y < 32 || y >= GameConstants.GAME_WORLD_HEIGHT - 32) {
-            this.active = false;
-        }
     }
 
     @Override
@@ -96,19 +89,8 @@ public class WindBladeSpell extends GameObject implements Spell {
         }
     }
 
+    @Override
     public boolean isActive() {
         return this.active;
-    }
-
-    public int getParentID() {
-        return this.parentID;
-    }
-
-    public float getX() {
-        return this.x;
-    }
-
-    public float getY() {
-        return this.y;
     }
 }
