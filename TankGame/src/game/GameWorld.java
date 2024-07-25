@@ -54,6 +54,7 @@ public class GameWorld extends JPanel implements Runnable {
     private Audio healthPotSound = new Audio("health potion", -15f);
     private Audio shieldPotSound = new Audio("shield potion", -15f);
     private Audio bandageSound = new Audio("bandage", 0f);
+    private static Audio castingSound = new Audio("casting", -20f);
 
     public GameWorld(Launcher lf) {
         this.lf = lf;
@@ -592,6 +593,7 @@ public class GameWorld extends JPanel implements Runnable {
         switch (audio) {
             case "explosion" -> explosionSound.playAudio();
             case "zap" -> zapSound.playAudio();
+            case "casting" -> castingSound.playAudio();
             default -> throw new IllegalArgumentException("Invalid audio!");
         }
     }

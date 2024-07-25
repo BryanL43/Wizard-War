@@ -57,9 +57,6 @@ public class Tank extends GameObject {
 
     long lastAppliedTime = 0;
 
-    private Audio castingSound;
-    private Audio finishedCastingSound;
-
     Tank(float x, float y, float vx, float vy, float angle, BufferedImage img) {
         super(new Rectangle((int)x, (int)y, img.getWidth(), img.getHeight()));
         this.x = x;
@@ -112,10 +109,7 @@ public class Tank extends GameObject {
             ImageIcon castingMagicCircle = ResourceManager.getAnimation("magic circle");
             castingCircle = new Animation(castingMagicCircle, (int) this.x - (img.getWidth() / 2), (int) this.y - (img.getHeight() / 2), castTime);
             GameWorld.createAnimation(castingCircle);
-            if (castingSound == null) {
-                castingSound = new Audio("casting", +5f);
-            }
-            castingSound.loopAudio();
+            GameWorld.playAudio("casting");
         }
     }
 
@@ -143,10 +137,6 @@ public class Tank extends GameObject {
             if (elapsedTime >= castTime) {
                 String currentSpell = playerHandler.getSpellName();
                 BufferedImage bulletImg = ResourceManager.getSprite(currentSpell);
-                if (finishedCastingSound == null) {
-                    finishedCastingSound = new Audio("finished casting", 0f);
-                }
-                finishedCastingSound.playAudio();
 
                 float offsetDistance = 15;
                 double radians = Math.toRadians(angle);
@@ -208,7 +198,6 @@ public class Tank extends GameObject {
             this.isShootInProgress = false;
             this.shootStartTime = 0;
             castingCircle.stopAnimation();
-            castingSound.stopAudio();
 
             // Cancel any ongoing timer task if shoot is released early
             if (shootTimer != null) {

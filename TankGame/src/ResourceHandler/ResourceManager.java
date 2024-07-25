@@ -44,7 +44,7 @@ public class ResourceManager {
         ResourceManager.sprites.put("wizard1", loadSprite("TankGame/resources/character/wizard1.png"));
         ResourceManager.sprites.put("wizard2", loadSprite("TankGame/resources/character/wizard2.png"));
         ResourceManager.sprites.put("floor", loadSprite("TankGame/resources/floor/Background.bmp"));
-        ResourceManager.sprites.put("title", loadSprite("TankGame/resources/title.bmp"));
+        ResourceManager.sprites.put("title", loadSprite("TankGame/resources/titleImg.png"));
         ResourceManager.sprites.put("solid wall", loadSprite("TankGame/resources/walls/wall1.png"));
         ResourceManager.sprites.put("breakable wall", loadSprite("TankGame/resources/walls/wall2.png"));
         ResourceManager.sprites.put("bullet", loadSprite("TankGame/resources/bullets/Shell.gif"));
@@ -77,6 +77,7 @@ public class ResourceManager {
         ResourceManager.audios.put("shield potion", loadAudio("TankGame/resources/soundeffects/ShieldPotionSound.wav"));
         ResourceManager.audios.put("wind", loadAudio("TankGame/resources/soundeffects/WindSoundEffect.wav"));
         ResourceManager.audios.put("fire whoosh", loadAudio("TankGame/resources/soundeffects/firewhoosh.wav"));
+        ResourceManager.audios.put("casting", loadAudio("TankGame/resources/soundeffects/UniversalCastSEP1.wav"));
     }
 
     public static void loadResources() throws UnsupportedAudioFileException, IOException {
