@@ -19,13 +19,14 @@ public class EndGamePanel extends JPanel {
 
         JButton start = new JButton("Restart Game");
         start.setFont(new Font("Courier New", Font.BOLD, 24));
-        start.setBounds(150, 300, 250, 50);
+//        start.setBounds(150, 300, 250, 50);
+        start.setBounds(100, 300, 250, 50);
         start.addActionListener((actionEvent -> this.lf.setFrame("game")));
 
 
         JButton exit = new JButton("Exit");
         exit.setFont(new Font("Courier New", Font.BOLD, 24));
-        exit.setBounds(150, 400, 250, 50);
+        exit.setBounds(150, 400, 150, 50);
         exit.addActionListener((actionEvent -> this.lf.closeGame()));
 
         this.add(start);

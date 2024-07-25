@@ -198,8 +198,10 @@ public class GameWorld extends JPanel implements Runnable {
         player1Label.setIcon(new ImageIcon(player1Image));
         player1Label.repaint();
 
-        t2.setX(1775);
+        t2.setX(224);
         t2.setY(718);
+//        t2.setX(1775);
+//        t2.setY(718);
         t2.reset();
 
         BufferedImage player2Image = ResourceManager.getSprite("wizard2");
