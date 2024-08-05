@@ -81,7 +81,7 @@ public class ZapSpell extends GameObject implements Spell {
         if (otherObj instanceof Tank otherTank) {
             if (otherTank.getID() != parentID) { //Prevent damaging yourself
                 this.active = false;
-                otherTank.takeDamage(10);
+                otherTank.takeDamage(30);
                 crackleSound.stopAudio();
                 ImageIcon zapEffectIcon = ResourceManager.getAnimation("zap");
                 int zapEffectX = (int) this.x - (zapEffectIcon.getIconWidth() / 2);

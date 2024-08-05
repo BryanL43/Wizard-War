@@ -90,7 +90,7 @@ public class FireBallSpell extends GameObject implements Spell {
 
             // Check if enemy tank intersects with the animation bounding box
             if (otherObj instanceof Tank && otherObj.getHitbox().intersects(explosion.getHitBox())) {
-                ((Tank) otherObj).takeDamage(10);
+                ((Tank) otherObj).takeDamage(35);
             }
         }
     }

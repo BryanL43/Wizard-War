@@ -79,7 +79,7 @@ public class WindBladeSpell extends GameObject implements Spell {
         if (otherObj instanceof Tank otherTank) {
             if (otherTank.getID() != parentID) { //Prevent damaging yourself
                 this.active = false;
-                otherTank.takeDamage(10);
+                otherTank.takeDamage(15);
                 windSound.stopAudio();
             }
         }
